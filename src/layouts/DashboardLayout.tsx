@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import {
   Bars3Icon,
-  XMarkIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import Sidebar from './SliderBar';
@@ -14,7 +13,7 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3">
           {/* Left side - Menu button + Logo */}
           <div className="flex items-center gap-3">
@@ -43,7 +42,7 @@ export default function DashboardLayout() {
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          className="lg:hidden fixed inset-0 top-[57px] bg-black/50 z-30"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -52,17 +51,10 @@ export default function DashboardLayout() {
       <div className="flex">
         {/* Sidebar - hidden on mobile, shown via overlay */}
         <div
-          className={`fixed lg:static inset-y-0 left-0 z-40 transform lg:transform-none transition-transform duration-200 ease-in-out ${
+          className={`fixed lg:static top-[57px] bottom-0 left-0 z-40 transform lg:transform-none transition-transform duration-200 ease-in-out ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
-          {/* Mobile close button */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden absolute top-2 right-2 p-2 text-white/80 hover:text-white z-50"
-          >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </div>
 
