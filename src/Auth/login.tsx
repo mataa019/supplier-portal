@@ -6,13 +6,18 @@ import Logo from '../assets/Minet_Logo.png';
 export default function Login() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [userType, setUserType] = useState<'supplier' | 'admin'>('supplier');
 
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // bypass validation, redirect to dashboard
-    navigate('/dashboard');
+    // Role-based redirect
+    if (userType === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -28,6 +33,32 @@ export default function Login() {
         <h2 className="text-base font-medium text-gray-600 text-center mb-6">
           Sign in to your account
         </h2>
+
+        {/* User Type Selector */}
+        <div className="flex gap-2 mb-6">
+          <button
+            type="button"
+            onClick={() => setUserType('supplier')}
+            className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-colors ${
+              userType === 'supplier'
+                ? 'bg-red-600 text-white border-red-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Supplier
+          </button>
+          <button
+            type="button"
+            onClick={() => setUserType('admin')}
+            className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-colors ${
+              userType === 'admin'
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Admin
+          </button>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -52,9 +83,13 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full py-3 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className={`w-full py-3 text-sm font-medium text-white rounded-lg transition-colors ${
+              userType === 'admin'
+                ? 'bg-gray-900 hover:bg-gray-800'
+                : 'bg-red-600 hover:bg-red-700'
+            }`}
           >
-            Sign In
+            Sign In as {userType === 'admin' ? 'Admin' : 'Supplier'}
           </button>
         </form>
 
