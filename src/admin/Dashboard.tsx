@@ -5,7 +5,6 @@ import {
   CreditCardIcon,
   CheckCircleIcon,
   ClockIcon,
-  XCircleIcon,
   ArrowTrendingUpIcon,
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
@@ -17,7 +16,7 @@ const stats = [
   { title: 'Pending Payments', value: 7, change: '-2', icon: CreditCardIcon, color: 'blue' },
 ];
 
-const recentApplications = [
+const recentApplications: { id: string; company: string; category: string; status: 'pending' | 'approved' | 'rejected'; date: string }[] = [
   { id: 'APP-2026-0045', company: 'ABC Construction Ltd', category: 'Construction Materials', status: 'pending', date: '2026-03-09' },
   { id: 'APP-2026-0044', company: 'Tech Solutions Inc', category: 'IT Equipment & Services', status: 'approved', date: '2026-03-08' },
   { id: 'APP-2026-0043', company: 'CleanPro Services', category: 'Cleaning Services', status: 'pending', date: '2026-03-08' },
