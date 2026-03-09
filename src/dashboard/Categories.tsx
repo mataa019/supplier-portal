@@ -116,9 +116,9 @@ export default function Categories() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Supplier Categories</h1>
         <p className="text-sm text-gray-500 mt-1">Select a category to begin your application</p>
       </div>
