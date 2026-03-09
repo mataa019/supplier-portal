@@ -88,6 +88,29 @@ export default function Welcome() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section className="py-12 sm:py-16 bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">About Minet</h2>
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">
+              Minet is a trusted pan-African advisor that meets the uncertainties of tomorrow by delivering 
+              risk and human capital solutions today. As the largest Aon Global correspondent, Minet has 
+              access to a network of over 50,000 colleagues in 120 countries as well as proprietary data, 
+              research and analytics, which enable us to manage and secure the risks of tomorrow and provide 
+              clients with an unrivalled advantage.
+            </p>
+            <div className="bg-red-50 border border-red-100 rounded-lg p-4 sm:p-6">
+              <p className="text-sm sm:text-base text-gray-700 font-medium">
+                Minet Zambia Limited is hereby inviting applications from reputable companies to register 
+                as suppliers for the provision of goods and services for the 2026 and 2027 financial years, 
+                in the categories listed below.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
