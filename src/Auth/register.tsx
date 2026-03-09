@@ -36,7 +36,7 @@ export default function Register() {
 
         {/* Title */}
         <h2 className="text-xl font-semibold text-gray-700 text-center mb-6">
-          Register your company
+          Register your company for supplier portal access
         </h2>
 
         {/* Form */}
