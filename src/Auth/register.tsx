@@ -28,7 +28,7 @@ export default function Register() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <img src={Logo} alt="Minet Zambia" className="h-14 mb-3" />
-          <span className="text-lg font-semibold text-gray-900">Supplier Portal</span>
+          <span className="text-lg font-semibold text-gray-900">Get Started</span>
         </div>
 
         {/* Title */}

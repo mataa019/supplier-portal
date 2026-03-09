@@ -39,7 +39,6 @@ export default function Welcome() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={Logo} alt="Minet Zambia" className="h-10" />
-            <span className="text-lg font-semibold text-gray-900">Supplier Portal</span>
           </div>
           <div className="flex items-center gap-3">
             <Link

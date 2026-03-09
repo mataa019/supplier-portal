@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Card } from '../component/cards';
-import Select from '../component/Select';
-import Button from '../component/Button';
+import {
+  DocumentArrowDownIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  ExclamationTriangleIcon,
+  DocumentTextIcon,
+  PencilIcon,
+  DocumentCheckIcon,
+  ShieldCheckIcon,
+  ClipboardDocumentCheckIcon,
+} from '@heroicons/react/24/outline';
 
 const categories = [
   { value: 'CAT-001', label: 'Construction Materials - K2,500' },
@@ -90,116 +100,149 @@ export default function Application() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Apply for Category</h1>
-        <p className="text-gray-600">Select a category and download the application form</p>
+        <h1 className="text-xl font-semibold text-gray-900">Apply for Category</h1>
+        <p className="text-sm text-gray-500 mt-1">Select a category and download the application form</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Category Selection */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Step 1: Select Category</h2>
-            <Select
-              id="category"
-              label="Supplier Category"
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Step 1: Select Category</h2>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Supplier Category <span className="text-red-500">*</span>
+            </label>
+            <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              options={categories}
-              placeholder="Select a category"
-              required
-            />
-          </Card>
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Download Application Form */}
           {selectedCategory && (
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Step 2: Download Application Form</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Step 2: Download Application Form</h2>
+              <p className="text-sm text-gray-600 mb-4">
                 Download the application form, fill it out completely, and prepare it for upload.
               </p>
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="text-4xl">📄</div>
+              <div className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-lg">
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <DocumentTextIcon className="w-6 h-6 text-red-600" />
+                </div>
                 <div className="flex-1">
-                  <p className="font-medium text-gray-800">Application Form</p>
-                  <p className="text-sm text-gray-500">PDF Document • 2.5 MB</p>
+                  <p className="text-sm font-medium text-gray-900">Application Form</p>
+                  <p className="text-xs text-gray-500">PDF Document • 2.5 MB</p>
                 </div>
                 <button
                   onClick={handleDownloadForm}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
+                  <DocumentArrowDownIcon className="w-4 h-4" />
                   Download
                 </button>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Required Documents */}
           {selectedCategory && requirements.length > 0 && (
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Required Documents</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Required Documents</h2>
+              <p className="text-sm text-gray-600 mb-4">
                 Please ensure you have the following documents ready for upload:
               </p>
               <ul className="space-y-3">
                 {requirements.map((req, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm shrink-0">
+                  <li key={index} className="flex items-center gap-3">
+                    <div className="w-6 h-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-medium shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-gray-700">{req}</span>
+                    <span className="text-sm text-gray-700">{req}</span>
                   </li>
                 ))}
               </ul>
-            </Card>
+            </div>
           )}
 
           {/* Proceed Button */}
           {selectedCategory && (
             <div className="flex justify-end">
-              <Button variant="primary" onClick={handleProceed}>
-                Proceed to Document Upload →
-              </Button>
+              <button
+                onClick={handleProceed}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Proceed to Document Upload
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>
 
         {/* Sidebar Info */}
         <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Application Guidelines</h3>
-            <ul className="text-sm text-gray-600 space-y-2">
-              <li>• Fill out all sections of the form</li>
-              <li>• Use black or blue ink if filling manually</li>
-              <li>• Ensure all information is accurate</li>
-              <li>• Sign where indicated</li>
-              <li>• Scan the completed form clearly</li>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Application Guidelines</h3>
+            <ul className="text-sm text-gray-600 space-y-3">
+              <li className="flex items-center gap-2">
+                <PencilIcon className="w-4 h-4 text-gray-400" />
+                Fill out all sections of the form
+              </li>
+              <li className="flex items-center gap-2">
+                <DocumentTextIcon className="w-4 h-4 text-gray-400" />
+                Use black or blue ink if filling manually
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircleIcon className="w-4 h-4 text-gray-400" />
+                Ensure all information is accurate
+              </li>
+              <li className="flex items-center gap-2">
+                <ClipboardDocumentCheckIcon className="w-4 h-4 text-gray-400" />
+                Sign where indicated
+              </li>
+              <li className="flex items-center gap-2">
+                <DocumentCheckIcon className="w-4 h-4 text-gray-400" />
+                Scan the completed form clearly
+              </li>
             </ul>
-          </Card>
+          </div>
 
-          <Card className="p-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Need Help?</h3>
-            <p className="text-sm text-gray-600 mb-3">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Need Help?</h3>
+            <p className="text-sm text-gray-600 mb-4">
               Contact our support team for assistance with your application.
             </p>
-            <div className="text-sm space-y-2">
-              <p className="flex items-center gap-2">
-                <span>📧</span>
-                <span>suppliers@portal.com</span>
+            <div className="text-sm space-y-3">
+              <p className="flex items-center gap-3 text-gray-600">
+                <EnvelopeIcon className="w-4 h-4 text-gray-400" />
+                suppliers@minetzambia.com
               </p>
-              <p className="flex items-center gap-2">
-                <span>📞</span>
-                <span>+260 XXX XXXXXX</span>
+              <p className="flex items-center gap-3 text-gray-600">
+                <PhoneIcon className="w-4 h-4 text-gray-400" />
+                +260 XXX XXXXXX
               </p>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-6 bg-yellow-50 border border-yellow-200">
-            <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Important</h3>
-            <p className="text-sm text-yellow-700">
-              Incomplete or falsified applications will be rejected. Ensure all documents are valid and up to date.
-            </p>
-          </Card>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-semibold text-yellow-800 mb-1">Important</h3>
+                <p className="text-sm text-yellow-700">
+                  Incomplete or falsified applications will be rejected. Ensure all documents are valid and up to date.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
