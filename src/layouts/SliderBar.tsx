@@ -22,10 +22,10 @@ export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-56 bg-white border-r border-gray-200 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col">
+    <aside className="w-60 bg-red-700 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col">
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu</p>
+      <nav className="flex-1 px-4 py-6 overflow-y-auto">
+        <p className="px-3 mb-3 text-xs font-semibold text-red-200 uppercase tracking-wider">Navigation</p>
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -33,10 +33,10 @@ export default function Sidebar() {
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-red-50 text-red-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-white text-red-700'
+                      : 'text-white/90 hover:bg-red-600 hover:text-white'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
@@ -49,10 +49,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="px-3 py-4 border-t border-gray-200">
+      <div className="px-4 py-4 border-t border-red-600">
         <Link
           to="/login"
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg"
+          className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-white/80 hover:text-white hover:bg-red-600 rounded-lg transition-colors"
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
           Logout
