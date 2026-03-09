@@ -79,42 +79,7 @@ export default function DashboardHome() {
         </div>
       </Card>
 
-      {/* Recent Applications */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Recent Applications</h2>
-          <Link 
-            to="/dashboard/applications" 
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            View All →
-          </Link>
-        </div>
-        
-        {recentApplications.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentApplications.map((app) => (
-              <ApplicationCard
-                key={app.id}
-                {...app}
-                onView={handleViewApplication}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📋</div>
-            <h3 className="text-lg font-medium text-gray-800 mb-2">No applications yet</h3>
-            <p className="text-gray-600 mb-4">Start by selecting a category to apply for</p>
-            <Link
-              to="/dashboard/categories"
-              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Browse Categories
-            </Link>
-          </Card>
-        )}
-      </div>
+      
 
       {/* Quick Actions */}
       <Card className="p-6">

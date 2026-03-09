@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import TextInput from '../component/TextInput';
 import Button from '../component/Button';
 
@@ -7,10 +7,12 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log({ username, email });
+    // bypass validation, redirect to dashboard
+    navigate('/dashboard');
   };
 
   return (

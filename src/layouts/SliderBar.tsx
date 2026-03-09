@@ -1,46 +1,51 @@
 import { Link, useLocation } from 'react-router-dom';
+import {
+  HomeIcon,
+  FolderIcon,
+  PencilSquareIcon,
+  DocumentTextIcon,
+  CreditCardIcon,
+  ClipboardDocumentListIcon,
+  ArrowRightOnRectangleIcon,
+  UserCircleIcon,
+} from '@heroicons/react/24/outline';
 
 const menuItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { path: '/dashboard/categories', label: 'Categories', icon: '📁' },
-  { path: '/dashboard/apply', label: 'Apply', icon: '📝' },
-  { path: '/dashboard/documents', label: 'Documents', icon: '📄' },
-  { path: '/dashboard/payment', label: 'Payment', icon: '💳' },
-  { path: '/dashboard/applications', label: 'My Applications', icon: '📋' },
+  { path: '/dashboard', label: 'Dashboard', icon: HomeIcon },
+  { path: '/dashboard/categories', label: 'Categories', icon: FolderIcon },
+  { path: '/dashboard/apply', label: 'Apply', icon: PencilSquareIcon },
+  { path: '/dashboard/documents', label: 'Documents', icon: DocumentTextIcon },
+  { path: '/dashboard/payment', label: 'Payment', icon: CreditCardIcon },
+  { path: '/dashboard/applications', label: 'My Applications', icon: ClipboardDocumentListIcon },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-64 bg-gray-900 text-white min-h-screen flex flex-col">
+    <aside className="w-56 bg-white border-r border-gray-200 min-h-screen flex flex-col">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">S</span>
-          </div>
-          <span className="text-xl font-semibold">Supplier Portal</span>
-        </div>
+      <div className="px-4 py-5 border-b border-gray-200">
+        <span className="text-base font-semibold text-gray-800">Supplier Portal</span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className="flex-1 px-3 py-4">
+        <ul className="space-y-1">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded text-xs font-medium ${
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
                 </Link>
               </li>
             );
@@ -49,22 +54,20 @@ export default function Sidebar() {
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-            <span className="text-sm">👤</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">Company Name</p>
-            <p className="text-xs text-gray-400">supplier@email.com</p>
+      <div className="px-3 py-4 border-t border-gray-200">
+        <div className="flex items-center gap-2 px-3 py-2">
+          <UserCircleIcon className="w-6 h-6 text-gray-400" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-gray-700 truncate">Company Name</p>
+            <p className="text-xs text-gray-400 truncate">supplier@email.com</p>
           </div>
         </div>
         <Link
           to="/login"
-          className="flex items-center gap-3 px-4 py-2 mt-2 text-gray-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 px-3 py-2 mt-1 text-xs text-gray-500 hover:text-gray-700"
         >
-          <span>🚪</span>
-          <span>Logout</span>
+          <ArrowRightOnRectangleIcon className="w-4 h-4" />
+          Logout
         </Link>
       </div>
     </aside>
