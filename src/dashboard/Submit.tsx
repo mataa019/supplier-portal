@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Card } from '../component/cards';
+import {
+  CheckCircleIcon,
+  CheckIcon,
+  EnvelopeIcon,
+  ClockIcon,
+  BellIcon,
+} from '@heroicons/react/24/outline';
 import Button from '../component/Button';
 
 const categoryInfo: Record<string, string> = {
@@ -53,7 +59,6 @@ export default function Submit() {
     }
 
     setIsSubmitting(true);
-    // Simulate submission
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsSubmitting(false);
     setSubmitted(true);
@@ -61,29 +66,38 @@ export default function Submit() {
 
   if (submitted) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-2xl mx-auto">
-          <Card className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">✓</span>
+          <div className="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircleIcon className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Application Submitted Successfully!</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">Application Submitted Successfully!</h1>
             <p className="text-gray-600 mb-6">
               Your application has been submitted for review. You will receive a confirmation email shortly.
             </p>
             
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <p className="text-sm text-gray-500 mb-1">Application Reference Number</p>
-              <p className="text-2xl font-bold text-blue-600">APP-2026-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</p>
+              <p className="text-xl sm:text-2xl font-bold text-red-600">APP-2026-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</p>
             </div>
 
-            <div className="space-y-3 text-sm text-gray-600 mb-8">
-              <p>📧 A confirmation email has been sent to your registered email</p>
-              <p>⏱️ Expected processing time: 10-15 business days</p>
-              <p>🔔 You will be notified of any status updates</p>
+            <div className="space-y-3 text-sm text-gray-600 mb-8 text-left sm:text-center">
+              <p className="flex items-center gap-2 justify-start sm:justify-center">
+                <EnvelopeIcon className="w-5 h-5 text-gray-400" />
+                A confirmation email has been sent to your registered email
+              </p>
+              <p className="flex items-center gap-2 justify-start sm:justify-center">
+                <ClockIcon className="w-5 h-5 text-gray-400" />
+                Expected processing time: 10-15 business days
+              </p>
+              <p className="flex items-center gap-2 justify-start sm:justify-center">
+                <BellIcon className="w-5 h-5 text-gray-400" />
+                You will be notified of any status updates
+              </p>
             </div>
 
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 Go to Dashboard
               </Button>
@@ -91,114 +105,114 @@ export default function Submit() {
                 View My Applications
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Review & Submit</h1>
-        <p className="text-gray-600">Review your application details before final submission</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl font-semibold text-gray-900">Review & Submit</h1>
+        <p className="text-sm text-gray-500 mt-1">Review your application details before final submission</p>
       </div>
 
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Category */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">Category</h2>
-              <p className="text-gray-600">{categoryInfo[categoryId] || 'Unknown Category'}</p>
+              <h2 className="text-base font-semibold text-gray-900">Category</h2>
+              <p className="text-sm text-gray-600">{categoryInfo[categoryId] || 'Unknown Category'}</p>
             </div>
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm w-fit">
               {categoryId}
             </span>
           </div>
-        </Card>
+        </div>
 
         {/* Company Information */}
-        <Card className="p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Company Information</h2>
-            <button className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
+            <h2 className="text-base font-semibold text-gray-900">Company Information</h2>
+            <button className="text-red-600 hover:text-red-700 text-sm">Edit</button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-gray-500">Company Name</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.companyInfo.name}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.companyInfo.name}</p>
             </div>
             <div>
               <p className="text-gray-500">Registration Number</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.companyInfo.registrationNumber}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.companyInfo.registrationNumber}</p>
             </div>
             <div>
               <p className="text-gray-500">TPIN</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.companyInfo.tpin}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.companyInfo.tpin}</p>
             </div>
             <div>
               <p className="text-gray-500">Phone</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.companyInfo.phone}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.companyInfo.phone}</p>
             </div>
             <div>
               <p className="text-gray-500">Email</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.companyInfo.email}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.companyInfo.email}</p>
             </div>
             <div>
               <p className="text-gray-500">Address</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.companyInfo.address}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.companyInfo.address}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Documents */}
-        <Card className="p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Uploaded Documents</h2>
-            <button className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
+            <h2 className="text-base font-semibold text-gray-900">Uploaded Documents</h2>
+            <button className="text-red-600 hover:text-red-700 text-sm">Edit</button>
           </div>
           <ul className="space-y-3">
             {mockApplicationData.documents.map((doc, index) => (
               <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <span className="text-green-500">✓</span>
-                  <span className="text-gray-800">{doc.name}</span>
+                  <CheckIcon className="w-5 h-5 text-green-500" />
+                  <span className="text-gray-900 text-sm">{doc.name}</span>
                 </div>
-                <span className="text-sm text-gray-500">{doc.file}</span>
+                <span className="text-xs sm:text-sm text-gray-500 hidden sm:block">{doc.file}</span>
               </li>
             ))}
           </ul>
-        </Card>
+        </div>
 
         {/* Payment */}
-        <Card className="p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Payment Details</h2>
+            <h2 className="text-base font-semibold text-gray-900">Payment Details</h2>
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
               {mockApplicationData.payment.status}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-gray-500">Payment Method</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.payment.method}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.payment.method}</p>
             </div>
             <div>
               <p className="text-gray-500">Amount Paid</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.payment.amount}</p>
+              <p className="font-medium text-gray-900">{mockApplicationData.payment.amount}</p>
             </div>
             <div>
               <p className="text-gray-500">Reference</p>
-              <p className="font-medium text-gray-800">{mockApplicationData.payment.reference}</p>
+              <p className="font-medium text-gray-900 break-all">{mockApplicationData.payment.reference}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Terms and Conditions */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Terms and Conditions</h2>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-4">Terms and Conditions</h2>
           <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto text-sm text-gray-600 mb-4">
             <p className="mb-3">By submitting this application, I hereby declare that:</p>
             <ol className="list-decimal pl-4 space-y-2">
@@ -216,20 +230,20 @@ export default function Submit() {
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="w-5 h-5 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="w-5 h-5 mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500"
             />
             <span className="text-sm text-gray-700">
               I have read and agree to the terms and conditions, and confirm that all information provided is accurate.
             </span>
           </label>
-        </Card>
+        </div>
 
         {/* Submit Actions */}
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4">
           <Button variant="outline" onClick={() => navigate(-1)}>
             ← Back
           </Button>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               Save as Draft
             </Button>

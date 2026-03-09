@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Card } from '../component/cards';
+import {
+  BuildingLibraryIcon,
+  DevicePhoneMobileIcon,
+  CreditCardIcon,
+  ShieldCheckIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import TextInput from '../component/TextInput';
@@ -43,7 +50,6 @@ export default function Payment() {
     }
 
     setIsProcessing(true);
-    // Simulate processing
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsProcessing(false);
     
@@ -53,92 +59,92 @@ export default function Payment() {
   const isValid = paymentMethod === 'card' || (proofOfPayment && transactionRef);
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Payment</h1>
-        <p className="text-gray-600">Complete payment for your application</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl font-semibold text-gray-900">Payment</h1>
+        <p className="text-sm text-gray-500 mt-1">Complete payment for your application</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Fee Summary */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Application Fee Summary</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Application Fee Summary</h2>
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                <span className="text-gray-600">Category</span>
-                <span className="font-medium text-gray-800">{categoryInfo.name}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 pb-3 border-b border-gray-200 gap-1">
+                <span className="text-sm text-gray-600">Category</span>
+                <span className="font-medium text-gray-900">{categoryInfo.name}</span>
               </div>
               <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                <span className="text-gray-600">Application Fee</span>
-                <span className="font-medium text-gray-800">K{categoryInfo.fee.toLocaleString()}</span>
+                <span className="text-sm text-gray-600">Application Fee</span>
+                <span className="font-medium text-gray-900">K{categoryInfo.fee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                <span className="text-gray-600">Processing Fee</span>
-                <span className="font-medium text-gray-800">K50</span>
+                <span className="text-sm text-gray-600">Processing Fee</span>
+                <span className="font-medium text-gray-900">K50</span>
               </div>
-              <div className="flex justify-between items-center text-lg">
-                <span className="font-semibold text-gray-800">Total Amount</span>
-                <span className="font-bold text-blue-600">K{(categoryInfo.fee + 50).toLocaleString()}</span>
+              <div className="flex justify-between items-center text-base sm:text-lg">
+                <span className="font-semibold text-gray-900">Total Amount</span>
+                <span className="font-bold text-red-600">K{(categoryInfo.fee + 50).toLocaleString()}</span>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* Payment Method Selection */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Select Payment Method</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Select Payment Method</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
-                { id: 'bank_transfer', label: 'Bank Transfer', icon: '🏦' },
-                { id: 'mobile_money', label: 'Mobile Money', icon: '📱' },
-                { id: 'card', label: 'Card Payment', icon: '💳' },
+                { id: 'bank_transfer', label: 'Bank Transfer', Icon: BuildingLibraryIcon },
+                { id: 'mobile_money', label: 'Mobile Money', Icon: DevicePhoneMobileIcon },
+                { id: 'card', label: 'Card Payment', Icon: CreditCardIcon },
               ].map((method) => (
                 <button
                   key={method.id}
                   onClick={() => setPaymentMethod(method.id as PaymentMethod)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  className={`p-4 rounded-lg border-2 transition-all text-left sm:text-center ${
                     paymentMethod === method.id
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-red-500 bg-red-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="text-2xl mb-2">{method.icon}</div>
-                  <div className="font-medium text-gray-800">{method.label}</div>
+                  <method.Icon className={`w-6 h-6 mb-2 sm:mx-auto ${paymentMethod === method.id ? 'text-red-600' : 'text-gray-500'}`} />
+                  <div className="font-medium text-gray-900 text-sm">{method.label}</div>
                 </button>
               ))}
             </div>
-          </Card>
+          </div>
 
           {/* Payment Instructions */}
           {paymentMethod === 'bank_transfer' && (
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Bank Transfer Instructions</h2>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-800 mb-3">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Bank Transfer Instructions</h2>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-red-800 mb-3">
                   Please make payment to the following account and upload proof of payment:
                 </p>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Bank Name:</span>
-                    <span className="font-medium text-gray-800">{bankDetails.bankName}</span>
+                    <span className="font-medium text-gray-900">{bankDetails.bankName}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Account Name:</span>
-                    <span className="font-medium text-gray-800">{bankDetails.accountName}</span>
+                    <span className="font-medium text-gray-900">{bankDetails.accountName}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Account Number:</span>
-                    <span className="font-medium text-gray-800">{bankDetails.accountNumber}</span>
+                    <span className="font-medium text-gray-900">{bankDetails.accountNumber}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Branch Code:</span>
-                    <span className="font-medium text-gray-800">{bankDetails.branchCode}</span>
+                    <span className="font-medium text-gray-900">{bankDetails.branchCode}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Reference:</span>
-                    <span className="font-medium text-blue-600">Your TPIN Number</span>
+                    <span className="font-medium text-red-600">Your TPIN Number</span>
                   </div>
                 </div>
               </div>
@@ -163,26 +169,26 @@ export default function Payment() {
                   hint="Upload bank deposit slip or transfer confirmation"
                 />
               </div>
-            </Card>
+            </div>
           )}
 
           {paymentMethod === 'mobile_money' && (
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Mobile Money Instructions</h2>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Mobile Money Instructions</h2>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-green-800 mb-3">
                   Send payment to the following mobile money account:
                 </p>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">MTN MoMo:</span>
-                    <span className="font-medium text-gray-800">+260 97X XXX XXXX</span>
+                    <span className="font-medium text-gray-900">+260 97X XXX XXXX</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Airtel Money:</span>
-                    <span className="font-medium text-gray-800">+260 96X XXX XXXX</span>
+                    <span className="font-medium text-gray-900">+260 96X XXX XXXX</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="text-gray-600">Reference:</span>
                     <span className="font-medium text-green-600">Your Company Name</span>
                   </div>
@@ -209,14 +215,14 @@ export default function Payment() {
                   hint="Upload confirmation message or screenshot"
                 />
               </div>
-            </Card>
+            </div>
           )}
 
           {paymentMethod === 'card' && (
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Card Payment</h2>
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <div className="text-4xl mb-4">💳</div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Card Payment</h2>
+              <div className="bg-gray-50 rounded-lg p-6 sm:p-8 text-center">
+                <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-4">
                   You will be redirected to our secure payment gateway to complete your card payment.
                 </p>
@@ -224,7 +230,7 @@ export default function Payment() {
                   We accept Visa, Mastercard, and other major cards.
                 </p>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Actions */}
@@ -241,37 +247,42 @@ export default function Payment() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Payment Security</h3>
-            <ul className="text-sm text-gray-600 space-y-2">
-              <li className="flex items-start gap-2">
-                <span className="text-green-500">🔒</span>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+            <h3 className="font-semibold text-gray-900 mb-3">Payment Security</h3>
+            <ul className="text-sm text-gray-600 space-y-3">
+              <li className="flex items-start gap-3">
+                <ShieldCheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
                 <span>All payments are secured with encryption</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-500">✓</span>
+              <li className="flex items-start gap-3">
+                <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
                 <span>Official receipts provided for all payments</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-500">✓</span>
+              <li className="flex items-start gap-3">
+                <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
                 <span>24/7 payment verification support</span>
               </li>
             </ul>
-          </Card>
+          </div>
 
-          <Card className="p-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Refund Policy</h3>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+            <h3 className="font-semibold text-gray-900 mb-3">Refund Policy</h3>
             <p className="text-sm text-gray-600">
               Application fees are non-refundable once processed. However, if your application is rejected due to our error, a full refund will be provided within 14 business days.
             </p>
-          </Card>
+          </div>
 
-          <Card className="p-6 bg-yellow-50 border border-yellow-200">
-            <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Important</h3>
-            <p className="text-sm text-yellow-700">
-              Ensure the payment reference includes your TPIN or Company Name for quick verification.
-            </p>
-          </Card>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-6">
+            <div className="flex items-start gap-3">
+              <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-yellow-800 mb-1">Important</h3>
+                <p className="text-sm text-yellow-700">
+                  Ensure the payment reference includes your TPIN or Company Name for quick verification.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

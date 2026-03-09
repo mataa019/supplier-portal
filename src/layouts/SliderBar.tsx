@@ -18,13 +18,21 @@ const menuItems = [
   { path: '/dashboard/applications', label: 'My Applications', icon: ClipboardDocumentListIcon },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export default function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
 
+  const handleClick = () => {
+    if (onNavigate) onNavigate();
+  };
+
   return (
-    <aside className="w-60 bg-red-700 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col">
+    <aside className="w-60 bg-red-700 lg:sticky lg:top-[57px] h-screen lg:h-[calc(100vh-57px)] flex flex-col">
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 pt-12 lg:pt-6 overflow-y-auto">
         <p className="px-3 mb-3 text-xs font-semibold text-red-200 uppercase tracking-wider">Navigation</p>
         <ul className="space-y-1">
           {menuItems.map((item) => {
@@ -33,6 +41,7 @@ export default function Sidebar() {
               <li key={item.path}>
                 <Link
                   to={item.path}
+                  onClick={handleClick}
                   className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-white text-red-700'
@@ -52,6 +61,7 @@ export default function Sidebar() {
       <div className="px-4 py-4 border-t border-red-600">
         <Link
           to="/login"
+          onClick={handleClick}
           className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-white/80 hover:text-white hover:bg-red-600 rounded-lg transition-colors"
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
