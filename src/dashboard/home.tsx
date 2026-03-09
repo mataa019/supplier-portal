@@ -1,28 +1,18 @@
 import { Link } from 'react-router-dom';
-import { Card, StatCard, ApplicationCard } from '../component/cards';
+import {
+  DocumentTextIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  FolderIcon,
+  CreditCardIcon,
+  ArrowRightIcon,
+} from '@heroicons/react/24/outline';
 
 const stats = [
-  { title: 'Total Applications', value: 3, icon: '📋' },
-  { title: 'Pending Review', value: 1, icon: '⏳' },
-  { title: 'Approved', value: 1, icon: '✅' },
-  { title: 'Categories Applied', value: 2, icon: '📁' },
-];
-
-const recentApplications = [
-  {
-    id: 'APP-001',
-    category: 'Construction Materials',
-    status: 'pending' as const,
-    submittedDate: '2026-03-05',
-    lastUpdated: '2026-03-08',
-  },
-  {
-    id: 'APP-002',
-    category: 'Office Supplies',
-    status: 'approved' as const,
-    submittedDate: '2026-02-20',
-    lastUpdated: '2026-02-28',
-  },
+  { title: 'Total Applications', value: 3, icon: DocumentTextIcon },
+  { title: 'Pending Review', value: 1, icon: ClockIcon },
+  { title: 'Approved', value: 1, icon: CheckCircleIcon },
+  { title: 'Categories Applied', value: 2, icon: FolderIcon },
 ];
 
 const steps = [
@@ -33,81 +23,83 @@ const steps = [
 ];
 
 export default function DashboardHome() {
-  const handleViewApplication = (id: string) => {
-    console.log('View application:', id);
-  };
-
   return (
-    <div className="p-8">
+    <div className="p-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Welcome back!</h1>
-        <p className="text-gray-600">Here's an overview of your supplier portal activity</p>
+      <div className="mb-6">
+        <h1 className="text-lg font-semibold text-gray-800">Dashboard</h1>
+        <p className="text-sm text-gray-500">Overview of your supplier portal activity</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((stat) => (
-          <StatCard key={stat.title} {...stat} />
+          <div key={stat.title} className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <stat.icon className="w-5 h-5 text-gray-400" />
+            </div>
+            <p className="text-2xl font-semibold text-gray-800">{stat.value}</p>
+            <p className="text-xs text-gray-500">{stat.title}</p>
+          </div>
         ))}
       </div>
 
-      {/* Application Process Steps */}
-      <Card className="p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Application Process</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Application Process */}
+      <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
+        <h2 className="text-sm font-semibold text-gray-800 mb-4">Application Process</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {steps.map((step, index) => (
             <Link
               key={step.number}
               to={step.link}
-              className="relative p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group"
+              className="flex items-start gap-3 p-3 border border-gray-100 rounded hover:border-gray-300 hover:bg-gray-50 transition-colors"
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                  {step.number}
-                </div>
-                <h3 className="font-medium text-gray-800 group-hover:text-blue-600">{step.title}</h3>
+              <span className="flex-shrink-0 w-6 h-6 bg-gray-100 text-gray-600 rounded text-xs font-medium flex items-center justify-center">
+                {step.number}
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-medium text-gray-700">{step.title}</h3>
+                <p className="text-xs text-gray-400 mt-0.5">{step.description}</p>
               </div>
-              <p className="text-sm text-gray-600">{step.description}</p>
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-gray-300">
-                  →
-                </div>
-              )}
             </Link>
           ))}
         </div>
-      </Card>
-
-      
+      </div>
 
       {/* Quick Actions */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-4">
+      <div className="bg-white border border-gray-200 rounded-lg p-5">
+        <h2 className="text-sm font-semibold text-gray-800 mb-4">Quick Actions</h2>
+        <div className="flex flex-wrap gap-3">
           <Link
             to="/dashboard/categories"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 text-white rounded hover:bg-gray-700"
           >
-            <span>📁</span>
-            <span>Apply for Category</span>
+            <FolderIcon className="w-4 h-4" />
+            Apply for Category
           </Link>
           <Link
             to="/dashboard/documents"
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded hover:bg-gray-50"
           >
-            <span>📄</span>
-            <span>Upload Documents</span>
+            <DocumentTextIcon className="w-4 h-4" />
+            Upload Documents
           </Link>
           <Link
             to="/dashboard/payment"
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded hover:bg-gray-50"
           >
-            <span>💳</span>
-            <span>Make Payment</span>
+            <CreditCardIcon className="w-4 h-4" />
+            Make Payment
+          </Link>
+          <Link
+            to="/dashboard/applications"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+          >
+            View all applications
+            <ArrowRightIcon className="w-4 h-4" />
           </Link>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
