@@ -1,4 +1,10 @@
 import { useState, useRef } from 'react';
+import {
+  DocumentIcon,
+  CloudArrowUpIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+import { DocumentIcon as DocumentSolid } from '@heroicons/react/24/solid';
 
 interface FileUploadProps {
   id: string;
@@ -82,7 +88,7 @@ export default function FileUpload({
       <div
         className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           isDragging
-            ? 'border-blue-500 bg-blue-50'
+            ? 'border-red-500 bg-red-50'
             : error
             ? 'border-red-300 bg-red-50'
             : fileName
@@ -105,24 +111,25 @@ export default function FileUpload({
         
         {fileName ? (
           <div className="flex items-center justify-center gap-3">
-            <span className="text-2xl">📄</span>
+            <DocumentSolid className="w-8 h-8 text-green-600" />
             <div className="text-left">
               <p className="text-sm font-medium text-gray-800">{fileName}</p>
               <button
                 type="button"
                 onClick={handleRemove}
-                className="text-xs text-red-600 hover:text-red-700"
+                className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700"
               >
+                <XMarkIcon className="w-3 h-3" />
                 Remove
               </button>
             </div>
           </div>
         ) : (
           <>
-            <div className="text-4xl mb-2">📁</div>
+            <CloudArrowUpIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
             <p className="text-sm text-gray-600">
               Drag and drop your file here, or{' '}
-              <span className="text-blue-600 font-medium">browse</span>
+              <span className="text-red-600 font-medium">browse</span>
             </p>
             <p className="text-xs text-gray-400 mt-1">
               Max file size: {maxSize}MB
