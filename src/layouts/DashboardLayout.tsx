@@ -14,7 +14,7 @@ export default function DashboardLayout() {
         <div className="flex items-center justify-between px-6 py-3">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold text-gray-900">Supplier Portal</span>
+            <span className="text-lg font-semibold text-gray-900">Minet Zambia Supplier Portal</span>
           </div>
 
           {/* Right side */}
