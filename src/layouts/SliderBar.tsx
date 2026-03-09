@@ -7,7 +7,6 @@ import {
   CreditCardIcon,
   ClipboardDocumentListIcon,
   ArrowRightOnRectangleIcon,
-  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 
 const menuItems = [
@@ -23,14 +22,10 @@ export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-56 bg-white border-r border-gray-200 min-h-screen flex flex-col">
-      {/* Logo */}
-      <div className="px-4 py-5 border-b border-gray-200">
-        <span className="text-base font-semibold text-gray-800">Supplier Portal</span>
-      </div>
-
+    <aside className="w-56 bg-white border-r border-gray-200 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col">
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+        <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu</p>
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -53,18 +48,11 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* User Section */}
+      {/* Logout */}
       <div className="px-3 py-4 border-t border-gray-200">
-        <div className="flex items-center gap-2 px-3 py-2">
-          <UserCircleIcon className="w-7 h-7 text-gray-400" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-700 truncate">Company Name</p>
-            <p className="text-xs text-gray-400 truncate">supplier@email.com</p>
-          </div>
-        </div>
         <Link
           to="/login"
-          className="flex items-center gap-2 px-3 py-2 mt-1 text-sm text-gray-500 hover:text-gray-700"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg"
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
           Logout
