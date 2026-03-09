@@ -23,11 +23,11 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-8 sm:py-12 px-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <img src={Logo} alt="Minet Zambia" className="h-14 mb-3" />
+        <div className="flex flex-col items-center mb-6 sm:mb-8">
+          <img src={Logo} alt="Minet Zambia" className="h-12 sm:h-14 mb-3" />
           <br></br>
           <span className="text-lg font-semibold text-gray-900">Get Started</span>
         </div>
