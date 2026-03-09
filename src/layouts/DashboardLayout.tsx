@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import {
   BellIcon,
-  MagnifyingGlassIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import Sidebar from './SliderBar';
+import Logo from '../assets/Minet_Logo.png';
 
 export default function DashboardLayout() {
   return (
@@ -14,7 +14,7 @@ export default function DashboardLayout() {
         <div className="flex items-center justify-between px-6 py-3">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold text-gray-900">Minet Zambia Supplier Portal</span>
+            <img src={Logo} alt="Minet Zambia" className="h-12" />
           </div>
 
           {/* Right side */}
