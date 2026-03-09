@@ -19,10 +19,6 @@ export default function DashboardLayout() {
 
           {/* Right side */}
           <div className="flex items-center gap-4">
-            <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-              <BellIcon className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
-            </button>
             <div className="flex items-center gap-2">
               <UserCircleIcon className="w-8 h-8 text-gray-400" />
               <div className="hidden sm:block">
