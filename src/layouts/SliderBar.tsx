@@ -38,9 +38,9 @@ export default function Sidebar() {
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 rounded text-sm font-medium ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
                     isActive
-                      ? 'bg-gray-100 text-gray-900'
+                      ? 'bg-red-50 text-red-600'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >

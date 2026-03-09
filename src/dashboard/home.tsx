@@ -24,42 +24,42 @@ const steps = [
 
 export default function DashboardHome() {
   return (
-    <div className="p-6">
+    <div className="p-8">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-gray-800">Dashboard</h1>
-        <p className="text-sm text-gray-500">Overview of your supplier portal activity</p>
+      <div className="mb-8">
+        <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Overview of your supplier portal activity</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {stats.map((stat) => (
-          <div key={stat.title} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <stat.icon className="w-5 h-5 text-gray-400" />
+          <div key={stat.title} className="bg-white border border-gray-200 rounded-lg p-5">
+            <div className="flex items-center justify-between mb-3">
+              <stat.icon className="w-6 h-6 text-red-600" />
             </div>
-            <p className="text-2xl font-semibold text-gray-800">{stat.value}</p>
-            <p className="text-xs text-gray-500">{stat.title}</p>
+            <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-sm text-gray-500 mt-1">{stat.title}</p>
           </div>
         ))}
       </div>
 
       {/* Application Process */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
-        <h2 className="text-sm font-semibold text-gray-800 mb-4">Application Process</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          {steps.map((step, index) => (
+      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+        <h2 className="text-base font-semibold text-gray-900 mb-5">Application Process</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {steps.map((step) => (
             <Link
               key={step.number}
               to={step.link}
-              className="flex items-start gap-3 p-3 border border-gray-100 rounded hover:border-gray-300 hover:bg-gray-50 transition-colors"
+              className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors"
             >
-              <span className="flex-shrink-0 w-6 h-6 bg-gray-100 text-gray-600 rounded text-xs font-medium flex items-center justify-center">
+              <span className="flex-shrink-0 w-8 h-8 bg-gray-900 text-white rounded text-sm font-semibold flex items-center justify-center">
                 {step.number}
               </span>
               <div className="min-w-0">
-                <h3 className="text-sm font-medium text-gray-700">{step.title}</h3>
-                <p className="text-xs text-gray-400 mt-0.5">{step.description}</p>
+                <h3 className="text-sm font-medium text-gray-900">{step.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">{step.description}</p>
               </div>
             </Link>
           ))}
@@ -67,36 +67,36 @@ export default function DashboardHome() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5">
-        <h2 className="text-sm font-semibold text-gray-800 mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-5">Quick Actions</h2>
+        <div className="flex flex-wrap gap-4">
           <Link
             to="/dashboard/categories"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 text-white rounded hover:bg-gray-700"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
-            <FolderIcon className="w-4 h-4" />
+            <FolderIcon className="w-5 h-5" />
             Apply for Category
           </Link>
           <Link
             to="/dashboard/documents"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded hover:bg-gray-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
           >
-            <DocumentTextIcon className="w-4 h-4" />
+            <DocumentTextIcon className="w-5 h-5" />
             Upload Documents
           </Link>
           <Link
             to="/dashboard/payment"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded hover:bg-gray-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
           >
-            <CreditCardIcon className="w-4 h-4" />
+            <CreditCardIcon className="w-5 h-5" />
             Make Payment
           </Link>
           <Link
             to="/dashboard/applications"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-red-600"
           >
             View all applications
-            <ArrowRightIcon className="w-4 h-4" />
+            <ArrowRightIcon className="w-5 h-5" />
           </Link>
         </div>
       </div>
