@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import TextInput from '../component/TextInput';
 import Button from '../component/Button';
 
@@ -59,9 +60,9 @@ export default function Login() {
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-500">
           Don't have an account?{' '}
-          <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
             Register here
-          </a>
+          </Link>
         </p>
       </div>
     </div>
