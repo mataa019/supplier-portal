@@ -10,14 +10,31 @@ export default function Register() {
     tpin: '',
     phoneNumber: '',
     email: '',
+    password: '',
+    confirmPassword: '',
   });
+  const [error, setError] = useState('');
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    setError('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    // Validate password strength
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+    
     // Handle registration logic here
     console.log(formData);
   };
@@ -36,6 +53,13 @@ export default function Register() {
         <h2 className="text-base font-medium text-gray-600 text-center mb-6">
           Register your company for supplier portal access
         </h2>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,6 +107,26 @@ export default function Register() {
             value={formData.email}
             onChange={handleChange('email')}
             placeholder="Enter email address"
+            required
+          />
+
+          <TextInput
+            id="password"
+            label="Password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange('password')}
+            placeholder="Enter password"
+            required
+          />
+
+          <TextInput
+            id="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={handleChange('confirmPassword')}
+            placeholder="Confirm your password"
             required
           />
 

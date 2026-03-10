@@ -42,13 +42,12 @@ export default function Login() {
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
         {/* Logo */}
         <div className="flex flex-col items-center mb-6 sm:mb-8">
-          <img src={Logo} alt="Minet Zambia" className="h-12 sm:h-14 mb-3" />
-          <span className="text-lg font-semibold text-gray-900">Supplier Portal</span>
+          <img src={Logo} alt="Minet Zambia" className="h-10 sm:h-14 mb-3" />
         </div>
 
         {/* Title */}
         <h2 className="text-base font-medium text-gray-600 text-center mb-6">
-          Sign in to your account
+          Login to your account
         </h2>
 
         {/* Error Message */}
