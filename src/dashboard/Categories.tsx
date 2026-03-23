@@ -15,7 +15,7 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 
-import { fetchSupplierCategories, SupplierCategory } from '../apiservice/Apiservice';
+import { fetchSupplierCategories, type SupplierCategory,  } from '../apiservice/Apiservice';
 import LoadingOverlay from '../component/LoadingOverlay';
 
 // Icon mapping for dynamic assignment
