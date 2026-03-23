@@ -20,6 +20,31 @@ const getAuthHeaders = () => {
   }
 }
 
+// Supplier Category Type
+export interface SupplierCategory {
+  id: string;
+  name: string;
+  description: string;
+  applicationFee: number;
+  Requirements: string;
+  status: string;
+  createdAt: string;
+  documentTemplate: string;
+}
+
+// Fetch all supplier categories
+export const fetchSupplierCategories = async (): Promise<SupplierCategory[]> => {
+  const response = await fetch(createApiUrl('/suppliers/categories'), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch supplier categories');
+  }
+  return response.json();
+};
+
 export interface RegisterPayload {
   companyName: string
   registrationNumber: string

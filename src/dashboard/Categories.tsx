@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MagnifyingGlassIcon,
@@ -15,94 +15,42 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 
-const categories = [
-  {
-    id: 'CAT-001',
-    name: 'Construction Materials',
-    description: 'Supply of building materials including cement, steel, aggregates, and finishing materials.',
-    fee: 'K2,500',
-    icon: BuildingOfficeIcon,
-    requirements: [
-      'Business Registration Certificate',
-      'Tax Compliance Certificate',
-      'Financial Statements (2 years)',
-      'Product Catalog',
-      'Quality Certifications',
-    ],
-  },
-  {
-    id: 'CAT-002',
-    name: 'Office Supplies',
-    description: 'Provision of office stationery, furniture, and equipment for daily operations.',
-    fee: 'K1,500',
-    icon: DocumentTextIcon,
-    requirements: [
-      'Business Registration Certificate',
-      'Tax Compliance Certificate',
-      'Product Price List',
-      'Delivery Capacity Proof',
-    ],
-  },
-  {
-    id: 'CAT-003',
-    name: 'IT Equipment & Services',
-    description: 'Supply of computers, networking equipment, software, and IT support services.',
-    fee: 'K3,000',
-    icon: ComputerDesktopIcon,
-    requirements: [
-      'Business Registration Certificate',
-      'Tax Compliance Certificate',
-      'Technical Certifications',
-      'Partnership/Distributor Agreements',
-      'Service Level Agreement Template',
-    ],
-  },
-  {
-    id: 'CAT-004',
-    name: 'Cleaning Services',
-    description: 'Professional cleaning and janitorial services for office and industrial spaces.',
-    fee: 'K1,000',
-    icon: SparklesIcon,
-    requirements: [
-      'Business Registration Certificate',
-      'Tax Compliance Certificate',
-      'Staff List & Qualifications',
-      'Equipment Inventory',
-    ],
-  },
-  {
-    id: 'CAT-005',
-    name: 'Security Services',
-    description: 'Provision of security personnel, surveillance systems, and risk management.',
-    fee: 'K2,000',
-    icon: ShieldCheckIcon,
-    requirements: [
-      'Business Registration Certificate',
-      'Tax Compliance Certificate',
-      'Security License',
-      'Insurance Certificate',
-      'Staff Clearance Documents',
-    ],
-  },
-  {
-    id: 'CAT-006',
-    name: 'Catering Services',
-    description: 'Food and beverage catering for events, meetings, and daily staff meals.',
-    fee: 'K1,500',
-    icon: CakeIcon,
-    requirements: [
-      'Business Registration Certificate',
-      'Tax Compliance Certificate',
-      'Health & Safety Certification',
-      'Food Handler Certificates',
-      'Sample Menu & Pricing',
-    ],
-  },
-];
+import { fetchSupplierCategories, SupplierCategory } from '../apiservice/Apiservice';
+import LoadingOverlay from '../component/LoadingOverlay';
+
+// Icon mapping for dynamic assignment
+const iconMap: Record<string, any> = {
+  'computers': ComputerDesktopIcon,
+  'office': DocumentTextIcon,
+  'security': ShieldCheckIcon,
+  'cleaning': SparklesIcon,
+  'catering': CakeIcon,
+  'building': BuildingOfficeIcon,
+};
+
 
 export default function Categories() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<SupplierCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await fetchSupplierCategories();
+        setCategories(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredCategories = categories.filter(
     (cat) =>
@@ -116,6 +64,7 @@ export default function Categories() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {loading && <LoadingOverlay message="Loading categories..." />}
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Supplier Categories</h1>
@@ -136,50 +85,64 @@ export default function Categories() {
         </div>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 mb-6 text-center">
+          {error}
+        </div>
+      )}
+
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCategories.map((category) => (
-          <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-red-50 rounded-lg">
-                <category.icon className="w-6 h-6 text-red-600" />
+        {filteredCategories.map((category) => {
+          // Try to pick an icon based on name or fallback
+          let iconKey = category.name.toLowerCase().split(' ')[0];
+          let Icon = iconMap[iconKey] || BuildingOfficeIcon;
+          // Parse requirements (API returns as comma-separated string)
+          const requirements = category.Requirements.split(',').map(r => r.trim());
+          return (
+            <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-2 bg-red-50 rounded-lg">
+                  <Icon className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-gray-900">{category.name}</h3>
+                  <p className="text-xs text-gray-500">{category.id}</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-gray-900">{category.name}</h3>
-                <p className="text-xs text-gray-500">{category.id}</p>
+              <p className="text-sm text-gray-600 mb-4">{category.description}</p>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs text-gray-500">Application Fee</span>
+                <span className="text-sm font-semibold text-gray-900">K{category.applicationFee.toLocaleString()}</span>
               </div>
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2">Requirements ({requirements.length})</p>
+                <ul className="space-y-1">
+                  {requirements.slice(0, 3).map((req, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-xs text-gray-600">
+                      <CheckCircleIcon className="w-3.5 h-3.5 text-gray-400" />
+                      {req}
+                    </li>
+                  ))}
+                  {requirements.length > 3 && (
+                    <li className="text-xs text-gray-400">+{requirements.length - 3} more</li>
+                  )}
+                </ul>
+              </div>
+              <button
+                onClick={() => handleApply(category.id)}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Apply Now
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-sm text-gray-600 mb-4">{category.description}</p>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-gray-500">Application Fee</span>
-              <span className="text-sm font-semibold text-gray-900">{category.fee}</span>
-            </div>
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 mb-2">Requirements ({category.requirements.length})</p>
-              <ul className="space-y-1">
-                {category.requirements.slice(0, 3).map((req, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-gray-400" />
-                    {req}
-                  </li>
-                ))}
-                {category.requirements.length > 3 && (
-                  <li className="text-xs text-gray-400">+{category.requirements.length - 3} more</li>
-                )}
-              </ul>
-            </div>
-            <button
-              onClick={() => handleApply(category.id)}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Apply Now
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {filteredCategories.length === 0 && (
+      {filteredCategories.length === 0 && !loading && (
         <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
           <MagnifyingGlassIcon className="w-10 h-10 text-gray-400 mx-auto mb-4" />
           <h3 className="text-base font-medium text-gray-900 mb-2">No categories found</h3>
