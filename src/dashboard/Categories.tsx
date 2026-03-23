@@ -42,7 +42,10 @@ export default function Categories() {
       setLoading(true);
       setError('');
       try {
-        const data = await fetchSupplierCategories();
+        const [data] = await Promise.all([
+          fetchSupplierCategories(),
+          new Promise(resolve => setTimeout(resolve, 1500))
+        ]);
         setCategories(data);
       } catch (err: any) {
         setError(err.message || 'Failed to load categories');
@@ -109,7 +112,7 @@ export default function Categories() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-base font-semibold text-gray-900">{category.name}</h3>
-                  <p className="text-xs text-gray-500">{category.id}</p>
+                  <p className="text-xs text-gray-500">{category.status}</p>
                 </div>
               </div>
               <p className="text-sm text-gray-600 mb-4">{category.description}</p>
