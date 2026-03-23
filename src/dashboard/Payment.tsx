@@ -11,6 +11,7 @@ import {
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import TextInput from '../component/TextInput';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 const categoryFees: Record<string, { name: string; fee: number }> = {
   'CAT-001': { name: 'Construction Materials', fee: 2500 },
@@ -60,6 +61,7 @@ export default function Payment() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {isProcessing && <LoadingOverlay message="Processing Payment..." />}
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Payment</h1>
