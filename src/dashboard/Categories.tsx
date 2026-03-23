@@ -4,7 +4,6 @@ import {
   MagnifyingGlassIcon,
   BuildingOfficeIcon,
   ComputerDesktopIcon,
-  WrenchScrewdriverIcon,
   ShieldCheckIcon,
   SparklesIcon,
   CakeIcon,
