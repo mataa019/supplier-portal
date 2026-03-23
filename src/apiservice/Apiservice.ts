@@ -37,3 +37,25 @@ export const registerSupplier = async (payload: RegisterPayload) => {
 
   return response.json()
 }
+
+export interface LoginPayload {
+  email: string
+  password: string
+}
+
+export const loginUser = async (payload: LoginPayload) => {
+  const response = await fetch(createApiUrl('/auth/login'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Login failed')
+  }
+
+  return response.json()
+}
