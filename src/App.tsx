@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import PrivateRoute from './component/PrivateRoute';
 import Welcome from './Auth/Welcome'
 import Login from './Auth/login'
 import Register from './Auth/register'
@@ -31,25 +32,26 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         
-        {/* Supplier Dashboard Routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<DashboardHome />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="apply" element={<Application />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="payment" element={<Payment />} />
-          <Route path="submit" element={<Submit />} />
-          <Route path="applications" element={<Applications />} />
-        </Route>
-
-        {/* Admin Dashboard Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="suppliers" element={<AdminSuppliers />} />
-          <Route path="applications" element={<AdminApplications />} />
-          <Route path="payments" element={<AdminPayments />} />
-          <Route path="categories" element={<AdminCategories />} />
-          <Route path="users" element={<AdminUsers />} />
+        {/* Protected Supplier Dashboard Routes */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="apply" element={<Application />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="payment" element={<Payment />} />
+            <Route path="submit" element={<Submit />} />
+            <Route path="applications" element={<Applications />} />
+          </Route>
+          {/* Protected Admin Dashboard Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="suppliers" element={<AdminSuppliers />} />
+            <Route path="applications" element={<AdminApplications />} />
+            <Route path="payments" element={<AdminPayments />} />
+            <Route path="categories" element={<AdminCategories />} />
+            <Route path="users" element={<AdminUsers />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

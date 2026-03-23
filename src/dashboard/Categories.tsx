@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+  // Only fetch categories, no need to check token or handle unauthorized here
 import {
   MagnifyingGlassIcon,
   BuildingOfficeIcon,
