@@ -102,3 +102,25 @@ export const resendOtp = async (payload: ResendOtpPayload) => {
 
   return response.json()
 }
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token')
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  }
+}
+
+export const getUserProfile = async () => {
+  const response = await fetch(createApiUrl('/auth/profile'), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to fetch profile')
+  }
+
+  return response.json()
+}
