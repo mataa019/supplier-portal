@@ -33,7 +33,11 @@ export default function VerifyOtp() {
     setError('');
 
     try {
-      await resendOtp({ email });
+      // Minimum 1.5s delay for better UX
+      await Promise.all([
+        resendOtp({ email }),
+        new Promise(resolve => setTimeout(resolve, 1500))
+      ]);
       setResendStatus('OTP has been resent to your email.');
     } catch (err: any) {
       setError(err.message || 'Failed to resend OTP');
@@ -50,7 +54,11 @@ export default function VerifyOtp() {
     try {
       if (!otp) throw new Error('Please enter the OTP');
 
-      const res = await verifyOtp({ otp }); // only otp (5 digits)
+      // Minimum 1.5s delay for better UX
+      const [res] = await Promise.all([
+        verifyOtp({ otp }), // only otp (5 digits)
+        new Promise(resolve => setTimeout(resolve, 1500))
+      ]);
 
       if (res.accessToken) localStorage.setItem('token', res.accessToken);
       if (res.user) localStorage.setItem('user', JSON.stringify(res.user));
