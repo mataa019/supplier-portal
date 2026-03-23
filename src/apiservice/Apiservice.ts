@@ -4,7 +4,8 @@ type AppEnv = ImportMetaEnv & {
 
 const env = import.meta.env as AppEnv
 
-export const API_BASE_URL = (env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+// Use /api proxy in development to avoid CORS
+export const API_BASE_URL = import.meta.env.DEV ? '/api' : (env.VITE_API_BASE_URL || '').replace(/\/$/, '')
 
 
 export const createApiUrl = (endpoint: string) => {
