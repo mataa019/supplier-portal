@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import TextInput from '../component/TextInput';
 import Logo from '../assets/Minet_Logo.png';
-import { verifyOtp } from '../apiservice/Apiservice';
+import { verifyOtp, resendOtp } from '../apiservice/Apiservice';
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
-  
+  const [isResending, setIsResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState<string | null>(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,6 +21,22 @@ export default function VerifyOtp() {
       setEmail(location.state.email);
     }
   }, [location]);
+
+  const handleResend = async () => {
+    if (!email) return;
+    setIsResending(true);
+    setResendStatus(null);
+    setError('');
+
+    try {
+      await resendOtp({ email });
+      setResendStatus('OTP has been resent to your email.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend OTP');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +99,12 @@ export default function VerifyOtp() {
                 </div>
             )}
 
+            {resendStatus && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg">
+                    {resendStatus}
+                </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-5">
                 <TextInput
                     id="otp"
@@ -99,6 +123,27 @@ export default function VerifyOtp() {
                     {isLoading ? 'Verifying...' : 'Verify Email'}
                 </button>
             </form>
+
+            <div className="mt-6 text-center">
+                <p className="text-sm text-gray-500">
+                    Didn't receive the code?{' '}
+                    <button 
+                        onClick={handleResend}
+                        disabled={isResending || !email}
+                        className="text-red-600 hover:text-red-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isResending ? 'Resending...' : 'Resend OTP'}
+                    </button>
+                </p>
+                <div className="mt-4">
+                  <button 
+                    onClick={() => navigate('/login')}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Back to Login
+                  </button>
+                </div>
+            </div>
         </div>
     </div>
   );

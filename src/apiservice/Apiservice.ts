@@ -81,3 +81,24 @@ export const verifyOtp = async (payload: VerifyOtpPayload) => {
 
   return response.json()
 }
+
+export interface ResendOtpPayload {
+  email: string
+}
+
+export const resendOtp = async (payload: ResendOtpPayload) => {
+  const response = await fetch(createApiUrl('/auth/resend-otp'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Resend OTP failed')
+  }
+
+  return response.json()
+}
