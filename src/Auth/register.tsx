@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import TextInput from '../component/TextInput';
 import Logo from '../assets/Minet_Logo.png';
+import { registerSupplier } from '../apiservice/Apiservice';
 
 export default function Register() {
   const [step, setStep] = useState(1);
@@ -33,6 +34,7 @@ export default function Register() {
     setError('');
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -50,18 +52,21 @@ export default function Register() {
 
     setIsLoading(true);
     
-    // TODO: Replace with actual API call
-    // const response = await fetch('/api/auth/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(formData)
-    // });
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/login');
-    }, 1000);
+    try {
+      await registerSupplier({
+        companyName: formData.companyName,
+        registrationNumber: formData.registeredNumber,
+        tpin: formData.tpin,
+        phone: formData.phoneNumber,
+        email: formData.email,
+        password: formData.password
+      })
+      navigate('/login')
+    } catch (err: any) {
+      setError(err.message || 'Registration failed')
+    } finally {
+      setIsLoading(false)
+    }
   };
 
   return (
