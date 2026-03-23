@@ -36,7 +36,7 @@ export default function VerifyOtp() {
       // Minimum 1.5s delay for better UX
       await Promise.all([
         resendOtp({ email }),
-        new Promise(resolve => setTimeout(resolve, 1500))
+        new Promise(resolve => setTimeout(resolve, 1700))
       ]);
       setResendStatus('OTP has been resent to your email.');
     } catch (err: any) {
