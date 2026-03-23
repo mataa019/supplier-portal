@@ -79,6 +79,7 @@ export default function Documents() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
+      {isSaving && <LoadingOverlay message="Saving Draft..." />}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Upload Documents</h1>
         <p className="text-sm text-gray-500 mt-1">Upload all required documents to proceed with your application</p>
