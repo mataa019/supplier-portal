@@ -16,9 +16,12 @@ export default function VerifyOtp() {
   const location = useLocation();
 
   useEffect(() => {
-    // Get email from router state if available
+    // Get email from router state or session storage
     if (location.state?.email) {
       setEmail(location.state.email);
+    } else {
+      const pendingEmail = sessionStorage.getItem('pendingLoginEmail');
+      if (pendingEmail) setEmail(pendingEmail);
     }
   }, [location]);
 
@@ -44,37 +47,20 @@ export default function VerifyOtp() {
     setError('');
 
     try {
-      if (!otp) {
-        throw new Error('Please enter the OTP');
-      }
+      if (!otp) throw new Error('Please enter the OTP');
 
-      // We send otp and optionally email if your API needs it
-      // The user spec said just payload { "otp": "..." } 
-      // but usually context is needed. 
-      // I'll send just otp if email is not needed, or both.
-      // For now, let's include email if present or just otp.
-      
-      const payload: any = { otp };
-      if (email) payload.email = email;
+      const res = await verifyOtp({ otp }); // only otp (5 digits)
 
-      const data = await verifyOtp(payload);
+      if (res.accessToken) localStorage.setItem('token', res.accessToken);
+      if (res.user) localStorage.setItem('user', JSON.stringify(res.user));
       
-      // If verification successful, store fully authenticated token if returned
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
-      if (data.user) {
-         localStorage.setItem('user', JSON.stringify(data.user));
-         if (data.user.role === 'admin') {
-             navigate('/admin');
-         } else {
-             navigate('/dashboard');
-         }
+      sessionStorage.removeItem('pendingLoginEmail');
+
+      if (res.user?.role === 'admin' || res.user?.role === 'manager') {
+        navigate('/admin');
       } else {
-         // Default fallback
-         navigate('/dashboard');
+        navigate('/dashboard');
       }
-
     } catch (err: any) {
       setError(err.message || 'Verification failed');
     } finally {

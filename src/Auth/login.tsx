@@ -19,27 +19,15 @@ export default function Login() {
 
     try {
       const data = await loginUser({ email, password });
-      
-      // Store token if provided
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        // Also store user info if needed
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
-      }
 
-      // Navigate to OTP verification instead of dashboard
-      // Pass email for context if needed
-      if (data.requiresOtp || !data.user) {
-        navigate('/verify-otp', { state: { email } });
-      } else if (data.user?.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      // Do NOT store token here — login no longer returns it
+      // Keep email for resend-otp screen
+      sessionStorage.setItem('pendingLoginEmail', email);
+
+      // Always go to OTP step after successful login
+      navigate('/verify-otp', { state: { email, role: data.user?.role } });
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setError(err?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
