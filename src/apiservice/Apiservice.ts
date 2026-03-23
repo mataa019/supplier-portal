@@ -125,3 +125,4 @@ export const getUserProfile = async () => {
 
   return response.json()
 }
+
