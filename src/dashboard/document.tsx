@@ -14,6 +14,7 @@ import {
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 interface UploadedFile {
   name: string;
