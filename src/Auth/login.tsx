@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import TextInput from '../component/TextInput';
 import Logo from '../assets/Minet_Logo.png';
+import { loginUser } from '../apiservice/Apiservice';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,25 +17,32 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-    // TODO: Replace with actual API call
-    // const response = await fetch('/api/auth/login', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email, password })
-    // });
-    // const data = await response.json();
-    // if (data.user.role === 'admin') navigate('/admin');
-    // else navigate('/dashboard');
+    try {
+      const data = await loginUser({ email, password });
+      
+      // Store token if provided
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        // Also store user info if needed
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+      }
 
-    // Simulate API call - redirect based on email for demo
-    setTimeout(() => {
-      setIsLoading(false);
-      if (email.includes('admin')) {
+      // Navigate to OTP verification instead of dashboard
+      // Pass email for context if needed
+      if (data.requiresOtp || !data.user) {
+        navigate('/verify-otp', { state: { email } });
+      } else if (data.user?.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
       }
-    }, 500);
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

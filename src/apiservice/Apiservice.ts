@@ -59,3 +59,25 @@ export const loginUser = async (payload: LoginPayload) => {
 
   return response.json()
 }
+
+export interface VerifyOtpPayload {
+  otp: string
+  email?: string
+}
+
+export const verifyOtp = async (payload: VerifyOtpPayload) => {
+  const response = await fetch(createApiUrl('/auth/verify-otp'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'OTP verification failed')
+  }
+
+  return response.json()
+}

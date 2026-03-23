@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Welcome from './Auth/Welcome'
 import Login from './Auth/login'
 import Register from './Auth/register'
+import VerifyOtp from './Auth/VerifyOtp'
 import DashboardLayout from './layouts/DashboardLayout'
 import DashboardHome from './dashboard/home'
 import Categories from './dashboard/Categories'
@@ -28,6 +29,7 @@ function App() {
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
         
         {/* Supplier Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>

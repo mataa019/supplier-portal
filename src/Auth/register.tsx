@@ -61,7 +61,8 @@ export default function Register() {
         email: formData.email,
         password: formData.password
       })
-      navigate('/login')
+      // Navigate to OTP verification instead of login
+      navigate('/verify-otp', { state: { email: formData.email } })
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
