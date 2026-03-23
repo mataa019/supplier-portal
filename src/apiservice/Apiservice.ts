@@ -11,6 +11,13 @@ export const createApiUrl = (endpoint: string) => {
 	const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
 	return `${API_BASE_URL}${normalizedEndpoint}`
 }
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token')
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  }
+}
 
 export interface RegisterPayload {
   companyName: string
@@ -103,13 +110,7 @@ export const resendOtp = async (payload: ResendOtpPayload) => {
   return response.json()
 }
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  }
-}
+
 
 export const getUserProfile = async () => {
   const response = await fetch(createApiUrl('/auth/profile'), {
