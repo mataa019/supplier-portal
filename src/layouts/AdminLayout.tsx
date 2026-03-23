@@ -17,13 +17,37 @@ export default function AdminLayout() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
         const data = await getUserProfile();
         setUser(data.user);
-        if (data.user.role !== 'admin') {
-           navigate('/dashboard'); // Limit access if not admin
+        
+        // Allow both admin and manager roles
+        if (!['admin', 'manager'].includes(data.user.role)) {
+           navigate('/dashboard'); // Limit access if not admin/manager
         }
       } catch (error) {
         console.error('Failed to fetch profile', error);
+        
+        // Fallback: Check if we have user data in localStorage from login
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (['admin', 'manager'].includes(parsedUser.role)) {
+              setUser(parsedUser);
+              return; // Stay on page if local data is valid
+            }
+          } catch (e) {
+            // Invalid local data
+          }
+        }
+        
+        // If API fails and no valid local data, redirect
         navigate('/login');
       }
     };
