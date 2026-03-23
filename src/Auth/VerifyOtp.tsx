@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import TextInput from '../component/TextInput';
+import LoadingOverlay from '../component/LoadingOverlay';
 import Logo from '../assets/Minet_Logo.png';
 import { verifyOtp, resendOtp } from '../apiservice/Apiservice';
 
