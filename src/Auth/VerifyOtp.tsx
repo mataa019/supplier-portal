@@ -71,6 +71,8 @@ export default function VerifyOtp() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+        {isLoading && <LoadingOverlay message="Verifying..." />}
+        {isResending && <LoadingOverlay message="Resending OTP..." />}
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
             <div className="flex flex-col items-center mb-6 sm:mb-8">
                 <img src={Logo} alt="Minet Zambia" className="h-10 sm:h-14 mb-3" />

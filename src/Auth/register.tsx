@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import TextInput from '../component/TextInput';
+import LoadingOverlay from '../component/LoadingOverlay';
 import Logo from '../assets/Minet_Logo.png';
 import { registerSupplier } from '../apiservice/Apiservice';
 
@@ -72,6 +73,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-8 sm:py-12 px-4">
+      {isLoading && <LoadingOverlay message="Creating Account..." />}
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
         {/* Logo */}
         <div className="flex flex-col items-center mb-6 sm:mb-8">
