@@ -11,7 +11,6 @@ import {
   DocumentTextIcon,
   PencilIcon,
   DocumentCheckIcon,
-  ShieldCheckIcon,
   ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline';
 
