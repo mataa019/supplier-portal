@@ -99,7 +99,7 @@ export default function DashboardLayout() {
                 >
                   Profile
                 </button>
-                {/* Add more dropdown items here if needed */}
+      
               </div>
             )}
           </div>

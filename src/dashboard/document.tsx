@@ -25,11 +25,8 @@ const documentTypes = [
   { id: 'application_form', label: 'Completed Application Form', required: true },
   { id: 'business_registration', label: 'Business Registration Certificate', required: true },
   { id: 'tax_certificate', label: 'Tax Compliance Certificate (TPIN)', required: true },
-  { id: 'financial_statements', label: 'Financial Statements (Last 2 years)', required: false },
   { id: 'company_profile', label: 'Company Profile', required: false },
-  { id: 'product_catalog', label: 'Product Catalog / Service Portfolio', required: false },
-  { id: 'certifications', label: 'Quality / Industry Certifications', required: false },
-  { id: 'references', label: 'Client References / Recommendation Letters', required: false },
+  { id: 'references', label: 'Current trade referencess', required: false },
 ];
 
 export default function Documents() {
