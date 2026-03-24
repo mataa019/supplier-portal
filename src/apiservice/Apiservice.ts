@@ -30,6 +30,8 @@ export interface SupplierCategory {
   status: string;
   createdAt: string;
   documentTemplate: string;
+  hasTemplateDocument: boolean;
+  templateDownloadUrl: string;
 }
 
 // Fetch all supplier categories
@@ -41,6 +43,19 @@ export const fetchSupplierCategories = async (): Promise<SupplierCategory[]> => 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch supplier categories');
+  }
+  return response.json();
+};
+
+// Fetch a supplier category by ID
+export const fetchSupplierCategoryById = async (categoryId: string): Promise<SupplierCategory> => {
+  const response = await fetch(createApiUrl(`/suppliers/categories/${categoryId}`), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch supplier category');
   }
   return response.json();
 };
@@ -87,7 +102,7 @@ export const loginUser = async (payload: LoginPayload) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || 'Login failed')
+    throw new Error(errorData.message || 'Login failed Check your connection')
   }
 
   return response.json()
@@ -151,4 +166,5 @@ export const getUserProfile = async () => {
 
   return response.json()
 }
+
 
