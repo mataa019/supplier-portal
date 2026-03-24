@@ -153,18 +153,44 @@ export const resendOtp = async (payload: ResendOtpPayload) => {
 
 
 
-export const getUserProfile = async () => {
+
+// Types for /auth/profile endpoint
+export interface SupplierProfile {
+  id: string;
+  userId: string;
+  companyName: string;
+  tpin: string;
+  registrationNumber: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  supplier: SupplierProfile;
+}
+
+export const getUserProfile = async (): Promise<UserProfile> => {
   const response = await fetch(createApiUrl('/auth/profile'), {
     method: 'GET',
     headers: getAuthHeaders(),
-  })
-
+  });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || 'Failed to fetch profile')
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch profile');
   }
-
-  return response.json()
-}
+  return response.json();
+};
 
 
