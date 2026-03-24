@@ -14,8 +14,7 @@ import {
   ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline';
 import { downloadSupplierCategoryTemplate } from '../apiservice/Apiservice';
-
-
+import { createApplication } from '../apiservice/Apiservice';
 
 
 export default function Application() {
@@ -78,9 +77,14 @@ export default function Application() {
     }
   };
 
-  const handleProceed = () => {
-    if (selectedCategory) {
+  // Create application before navigating to document upload
+  const handleProceed = async () => {
+    if (!selectedCategory) return;
+    try {
+      await createApplication({ categoryId: selectedCategory });
       navigate(`/dashboard/documents?category=${selectedCategory}`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create application');
     }
   };
 

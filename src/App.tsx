@@ -10,7 +10,7 @@ import Categories from './dashboard/Categories'
 import Application from './dashboard/ApplyCategory'
 import Documents from './dashboard/document'
 import Payment from './dashboard/Payment'
-import Submit from './dashboard/Submit'
+import Submit from './dashboard/ApplicationSubmitted'
 import Applications from './dashboard/Applications'
 
 // Admin imports
