@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchSupplierCategories, fetchSupplierCategoryById, SupplierCategory } from '../apiservice/Apiservice';
+import { fetchSupplierCategories, fetchSupplierCategoryById, type SupplierCategory,  } from '../apiservice/Apiservice';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   DocumentArrowDownIcon,
