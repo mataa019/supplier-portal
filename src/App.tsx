@@ -21,6 +21,7 @@ import AdminApplications from './admin/Applications'
 import AdminPayments from './admin/Payments'
 import AdminCategories from './admin/Categories'
 import AdminUsers from './admin/Users'
+import ProfilePage from './dashboard/profile';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="apply" element={<Application />} />
             <Route path="documents" element={<Documents />} />
             <Route path="payment" element={<Payment />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="submit" element={<Submit />} />
             <Route path="applications" element={<Applications />} />
           </Route>
