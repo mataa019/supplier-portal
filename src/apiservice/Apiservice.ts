@@ -227,4 +227,32 @@ export const createApplication = async (payload: CreateApplicationPayload): Prom
   return response.json();
 };
 
+// Upload document to application
+export interface UploadApplicationDocumentParams {
+  applicationId: string;
+  file: File;
+  type: string;
+  description?: string;
+}
+
+export const uploadApplicationDocument = async ({ applicationId, file, type, description }: UploadApplicationDocumentParams): Promise<void> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', type);
+  if (description) formData.append('description', description);
+
+  const response = await fetch(createApiUrl(`/applications/${applicationId}/documents`), {
+    method: 'POST',
+    headers: {
+      ...(getAuthHeaders().Authorization ? { 'Authorization': getAuthHeaders().Authorization } : {})
+      // Do not set Content-Type for FormData; browser will set it
+    },
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to upload document');
+  }
+};
+
 
