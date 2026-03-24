@@ -60,6 +60,19 @@ export const fetchSupplierCategoryById = async (categoryId: string): Promise<Sup
   return response.json();
 };
 
+// Download supplier category template document
+export const downloadSupplierCategoryTemplate = async (categoryId: string): Promise<Blob> => {
+  const response = await fetch(createApiUrl(`/suppliers/categories/${categoryId}/template`), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Template document not found on server');
+  }
+  return response.blob();
+};
+
 export interface RegisterPayload {
   companyName: string
   registrationNumber: string
@@ -150,8 +163,6 @@ export const resendOtp = async (payload: ResendOtpPayload) => {
 
   return response.json()
 }
-
-
 
 
 // Types for /auth/profile endpoint

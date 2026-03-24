@@ -1,13 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import { getUserProfile, type UserProfile } from '../apiservice/Apiservice';
 
-// Dummy update function (replace with real API call when available)
 async function updateSupplierProfile(supplier: Partial<UserProfile['supplier']>): Promise<void> {
-	// TODO: Replace with actual API call
 	return new Promise((resolve) => setTimeout(resolve, 1000));
 }
-
 
 export default function ProfilePage() {
 	const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -49,195 +45,192 @@ export default function ProfilePage() {
 		setSaveError(null);
 		try {
 			await updateSupplierProfile(form);
-			setProfile((prev) => prev ? { ...prev, supplier: { ...prev.supplier, ...form } } : prev);
+			setProfile((prev) =>
+				prev ? { ...prev, supplier: { ...prev.supplier, ...form } } : prev
+			);
 			setEditMode(false);
-		} catch (err) {
+		} catch {
 			setSaveError('Failed to save changes');
 		} finally {
 			setSaving(false);
 		}
 	};
 
-	if (loading) return <div className="p-8">Loading profile...</div>;
-	if (error) return <div className="p-8 text-red-600">{error}</div>;
-	if (!profile) return <div className="p-8">No profile data found.</div>;
+	if (loading)
+		return (
+			<div className="min-h-screen bg-slate-950 flex items-center justify-center gap-3">
+				<div className="w-6 h-6 rounded-full border-2 border-slate-700 border-t-indigo-500 animate-spin" />
+				<span className="text-slate-500 text-sm">Loading profile...</span>
+			</div>
+		);
+
+	if (error)
+		return (
+			<div className="min-h-screen bg-slate-950 flex items-center justify-center">
+				<span className="text-red-400 text-sm">{error}</span>
+			</div>
+		);
+
+	if (!profile)
+		return (
+			<div className="min-h-screen bg-slate-950 flex items-center justify-center">
+				<span className="text-slate-500 text-sm">No profile data found.</span>
+			</div>
+		);
+
+	const initials = (profile.supplier.companyName || profile.email || 'S')
+		.split(' ')
+		.map((w: string) => w[0])
+		.join('')
+		.slice(0, 2)
+		.toUpperCase();
+
+	const editableFields = [
+		{ name: 'companyName', label: 'Company Name', required: true },
+		{ name: 'contactPerson', label: 'Contact Person', required: true },
+		{ name: 'email', label: 'Supplier Email', type: 'email', required: true },
+		{ name: 'phone', label: 'Phone', required: true },
+		{ name: 'tpin', label: 'TPIN', required: true, mono: true },
+		{ name: 'registrationNumber', label: 'Registration No.', required: true, mono: true },
+		{ name: 'address', label: 'Address' },
+	];
 
 	return (
-		<div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow">
-			<h1 className="text-2xl font-bold mb-6">Supplier Profile</h1>
-			<div className="mb-4">
-				<div className="font-semibold">Email:</div>
-				<div>{profile.email}</div>
-			</div>
-			<div className="mb-4">
-				<div className="font-semibold">Role:</div>
-				<div>{profile.role}</div>
-			</div>
-			<div className="mb-4">
-				<div className="font-semibold">Status:</div>
-				<div>{profile.status}</div>
-			</div>
-			<div className="mb-4">
-				<div className="font-semibold">Email Verified:</div>
-				<div>{profile.emailVerified ? 'Yes' : 'No'}</div>
-			</div>
-			<div className="mb-4">
-				<div className="font-semibold">Created At:</div>
-				<div>{new Date(profile.createdAt).toLocaleString()}</div>
-			</div>
-			<div className="mb-4">
-				<div className="font-semibold">Updated At:</div>
-				<div>{new Date(profile.updatedAt).toLocaleString()}</div>
-			</div>
-			<h2 className="text-xl font-semibold mt-8 mb-4">Company Details</h2>
-			<form onSubmit={e => { e.preventDefault(); handleSave(); }}>
-				<div className="mb-2">
-					<div className="font-semibold">Company Name:</div>
-					{editMode ? (
-						<input
-							type="text"
-							name="companyName"
-							value={form.companyName || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-							required
-						/>
-					) : (
-						<div>{profile.supplier.companyName}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">TPIN:</div>
-					{editMode ? (
-						<input
-							type="text"
-							name="tpin"
-							value={form.tpin || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-							required
-						/>
-					) : (
-						<div>{profile.supplier.tpin}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Registration Number:</div>
-					{editMode ? (
-						<input
-							type="text"
-							name="registrationNumber"
-							value={form.registrationNumber || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-							required
-						/>
-					) : (
-						<div>{profile.supplier.registrationNumber}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Contact Person:</div>
-					{editMode ? (
-						<input
-							type="text"
-							name="contactPerson"
-							value={form.contactPerson || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-							required
-						/>
-					) : (
-						<div>{profile.supplier.contactPerson}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Phone:</div>
-					{editMode ? (
-						<input
-							type="text"
-							name="phone"
-							value={form.phone || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-							required
-						/>
-					) : (
-						<div>{profile.supplier.phone}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Supplier Email:</div>
-					{editMode ? (
-						<input
-							type="email"
-							name="email"
-							value={form.email || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-							required
-						/>
-					) : (
-						<div>{profile.supplier.email}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Address:</div>
-					{editMode ? (
-						<input
-							type="text"
-							name="address"
-							value={form.address || ''}
-							onChange={handleChange}
-							className="border rounded px-2 py-1 w-full"
-						/>
-					) : (
-						<div>{profile.supplier.address || '-'}</div>
-					)}
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Supplier Status:</div>
-					<div>{profile.supplier.status}</div>
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Supplier Created At:</div>
-					<div>{new Date(profile.supplier.createdAt).toLocaleString()}</div>
-				</div>
-				<div className="mb-2">
-					<div className="font-semibold">Supplier Updated At:</div>
-					<div>{new Date(profile.supplier.updatedAt).toLocaleString()}</div>
-				</div>
-				{editMode ? (
-					<div className="flex gap-2 mt-4">
-						<button
-							type="submit"
-							className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-60"
-							disabled={saving}
-						>
-							{saving ? 'Saving...' : 'Save'}
-						</button>
-						<button
-							type="button"
-							className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-							onClick={handleCancel}
-							disabled={saving}
-						>
-							Cancel
-						</button>
-						{saveError && <span className="text-red-600 ml-2">{saveError}</span>}
+		<div className="min-h-screen bg-slate-950 text-slate-200">
+
+			{/* HEADER */}
+			<div className="border-b border-slate-800 bg-slate-900">
+				<div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+
+					<div className="w-16 h-16 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xl font-semibold shadow">
+						{initials}
 					</div>
-				) : (
-					<div className="flex gap-2 mt-4">
-						<button
-							type="button"
-							className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-							onClick={handleEdit}
-						>
-							Edit
-						</button>
+
+					<div className="flex-1">
+						<h1 className="text-xl font-semibold text-white">
+							{profile.supplier.companyName}
+						</h1>
+						<p className="text-sm text-slate-400">{profile.email}</p>
+
+						<div className="flex flex-wrap gap-2 mt-3">
+							<span className="px-3 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+								{profile.supplier.status}
+							</span>
+							<span className="px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+								{profile.role}
+							</span>
+							<span
+								className={`px-3 py-1 text-xs rounded-full border ${
+									profile.emailVerified
+										? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+										: 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+								}`}
+							>
+								{profile.emailVerified ? 'Verified' : 'Unverified'}
+							</span>
+						</div>
 					</div>
-				)}
-			</form>
+
+					<div className="text-sm text-slate-400">
+						Joined:{' '}
+						{new Date(profile.createdAt).toLocaleDateString()}
+					</div>
+				</div>
+			</div>
+
+			{/* CONTENT */}
+			<div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+
+				{/* SUPPLIER CARD */}
+				<div className="bg-slate-900 border border-slate-800 rounded-2xl">
+
+					<div className="flex justify-between items-center px-6 py-4 border-b border-slate-800">
+						<div>
+							<p className="text-xs text-slate-500 uppercase">Supplier Details</p>
+							<p className="text-sm text-slate-300">Business info</p>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+						{editableFields.map(({ name, label, type, required, mono }) => (
+							<div key={name} className="px-6 py-4 border-b border-slate-800">
+								<p className="text-xs text-slate-500 mb-1">{label}</p>
+
+								{editMode ? (
+									<input
+										type={type || 'text'}
+										name={name}
+										value={(form as any)[name] || ''}
+										onChange={handleChange}
+										required={required}
+										className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+									/>
+								) : (
+									<p className={`text-sm ${mono ? 'font-mono text-slate-400' : ''}`}>
+										{(profile.supplier as any)[name] || '—'}
+									</p>
+								)}
+							</div>
+						))}
+					</div>
+
+					{/* ACTIONS */}
+					<div className="flex items-center gap-3 px-6 py-4 border-t border-slate-800">
+
+						{editMode ? (
+							<>
+								<button
+									onClick={handleSave}
+									disabled={saving}
+									className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm disabled:opacity-50"
+								>
+									{saving ? 'Saving...' : 'Save'}
+								</button>
+
+								<button
+									onClick={handleCancel}
+									className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm"
+								>
+									Cancel
+								</button>
+
+								{saveError && (
+									<span className="text-red-400 text-sm">{saveError}</span>
+								)}
+							</>
+						) : (
+							<button
+								onClick={handleEdit}
+								className="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-4 py-2 rounded-xl text-sm"
+							>
+								Edit Profile
+							</button>
+						)}
+					</div>
+				</div>
+
+				{/* ACCOUNT CARD */}
+				<div className="bg-slate-900 border border-slate-800 rounded-2xl">
+					<div className="px-6 py-4 border-b border-slate-800">
+						<p className="text-xs text-slate-500 uppercase">Account Info</p>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+						{[
+							{ label: 'Email', value: profile.email },
+							{ label: 'Role', value: profile.role },
+							{ label: 'Status', value: profile.status },
+							{ label: 'Created', value: new Date(profile.createdAt).toLocaleString() },
+						].map(({ label, value }) => (
+							<div key={label} className="px-6 py-4 border-b border-slate-800">
+								<p className="text-xs text-slate-500 mb-1">{label}</p>
+								<p className="text-sm text-slate-300 break-all">{value}</p>
+							</div>
+						))}
+					</div>
+				</div>
+
+			</div>
 		</div>
 	);
 }
