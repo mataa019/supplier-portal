@@ -15,6 +15,7 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import LoadingOverlay from '../component/LoadingOverlay';
+import { createApplication } from '../apiservice/Apiservice';
 
 interface UploadedFile {
   name: string;
@@ -68,9 +69,14 @@ export default function Documents() {
     alert('Draft saved successfully!');
   };
 
-  const handleProceed = () => {
-    if (requiredDocsUploaded) {
-      navigate(`/dashboard/payment?category=${categoryId || ''}`);
+  // Create application when proceeding
+  const handleProceed = async () => {
+    if (!categoryId) return;
+    try {
+      await createApplication({ categoryId });
+      navigate(`/dashboard/payment?category=${categoryId}`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create application');
     }
   };
 

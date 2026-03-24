@@ -208,15 +208,12 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 export interface CreateApplicationPayload {
   categoryId: string;
 }
-
 export interface ApplicationResponse {
   id: string;
   categoryId: string;
   status: string;
   createdAt: string;
-  // Add other fields as needed
 }
-
 export const createApplication = async (payload: CreateApplicationPayload): Promise<ApplicationResponse> => {
   const response = await fetch(createApiUrl('/application'), {
     method: 'POST',
