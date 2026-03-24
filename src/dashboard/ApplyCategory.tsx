@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fetchSupplierCategories, fetchSupplierCategoryById, SupplierCategory } from '../apiservice/Apiservice';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   DocumentArrowDownIcon,
@@ -14,67 +15,25 @@ import {
   ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline';
 
-const categories = [
-  { value: 'CAT-001', label: 'Construction Materials - K2,500' },
-  { value: 'CAT-002', label: 'Office Supplies - K1,500' },
-  { value: 'CAT-003', label: 'IT Equipment & Services - K3,000' },
-  { value: 'CAT-004', label: 'Cleaning Services - K1,000' },
-  { value: 'CAT-005', label: 'Security Services - K2,000' },
-  { value: 'CAT-006', label: 'Catering Services - K1,500' },
-];
 
-const categoryRequirements: Record<string, string[]> = {
-  'CAT-001': [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate (TPIN)',
-    'Financial Statements (Last 2 years)',
-    'Product Catalog with Pricing',
-    'Quality Certifications (ISO, etc.)',
-    'Proof of Physical Address',
-  ],
-  'CAT-002': [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate (TPIN)',
-    'Product Price List',
-    'Proof of Stock/Inventory',
-    'Delivery Capability Evidence',
-  ],
-  'CAT-003': [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate (TPIN)',
-    'Technical Team Certifications',
-    'Partnership/Distributor Agreements',
-    'Service Portfolio',
-    'Client References',
-  ],
-  'CAT-004': [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate (TPIN)',
-    'Staff List with Qualifications',
-    'Equipment Inventory',
-    'Insurance Certificate',
-  ],
-  'CAT-005': [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate (TPIN)',
-    'Security License from Regulatory Body',
-    'Insurance Certificate',
-    'Staff Police Clearance',
-    'Training Certificates',
-  ],
-  'CAT-006': [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate (TPIN)',
-    'Health & Safety Certification',
-    'Food Handler Certificates',
-    'Sample Menu with Pricing',
-  ],
-};
+
 
 export default function Application() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState<SupplierCategory[]>([]);
+  const [categoryDetails, setCategoryDetails] = useState<SupplierCategory | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchSupplierCategories()
+      .then((data) => setCategories(data))
+      .catch(() => setError('Failed to load categories'))
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -83,11 +42,28 @@ export default function Application() {
     }
   }, [searchParams]);
 
-  const requirements = selectedCategory ? categoryRequirements[selectedCategory] || [] : [];
+  useEffect(() => {
+    if (selectedCategory) {
+      setLoading(true);
+      fetchSupplierCategoryById(selectedCategory)
+        .then((data) => setCategoryDetails(data))
+        .catch(() => setCategoryDetails(null))
+        .finally(() => setLoading(false));
+    } else {
+      setCategoryDetails(null);
+    }
+  }, [selectedCategory]);
+
+  const requirements = categoryDetails?.Requirements
+    ? categoryDetails.Requirements.split(',').map((r) => r.trim())
+    : [];
 
   const handleDownloadForm = () => {
-    // In real app, this would download a PDF
-    alert('Application form download started. Check your downloads folder.');
+    if (categoryDetails?.templateDownloadUrl) {
+      window.open(categoryDetails.templateDownloadUrl, '_blank');
+    } else {
+      alert('No template available for this category.');
+    }
   };
 
   const handleProceed = () => {
@@ -117,18 +93,19 @@ export default function Application() {
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              disabled={loading}
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
+                <option key={cat.id} value={cat.id}>
+                  {cat.name} - K{cat.applicationFee}
                 </option>
               ))}
             </select>
           </div>
 
           {/* Download Application Form */}
-          {selectedCategory && (
+          {selectedCategory && categoryDetails && (
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-base font-semibold text-gray-900 mb-4">Step 2: Download Application Form</h2>
               <p className="text-sm text-gray-600 mb-4">
@@ -140,11 +117,12 @@ export default function Application() {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">Application Form</p>
-                  <p className="text-xs text-gray-500">PDF Document • 2.5 MB</p>
+                  <p className="text-xs text-gray-500">PDF Document</p>
                 </div>
                 <button
                   onClick={handleDownloadForm}
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={!categoryDetails.hasTemplateDocument}
                 >
                   <DocumentArrowDownIcon className="w-4 h-4" />
                   Download
