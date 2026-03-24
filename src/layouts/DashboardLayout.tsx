@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserProfile, type UserProfile } from '../apiservice/Apiservice';
@@ -9,11 +10,32 @@ import {
 import Sidebar from './SliderBar';
 import Logo from '../assets/Minet_Logo.png';
 
+export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getUserProfile().then(setProfile).catch(() => setProfile(null));
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
+
 
   useEffect(() => {
     getUserProfile().then(setProfile).catch(() => setProfile(null));
@@ -110,3 +132,5 @@ import Logo from '../assets/Minet_Logo.png';
     </div>
   );
 }
+
+
