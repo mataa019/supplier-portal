@@ -13,6 +13,7 @@ import {
   DocumentCheckIcon,
   ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline';
+import { downloadSupplierCategoryTemplate } from '../apiservice/Apiservice';
 
 
 
@@ -57,11 +58,23 @@ export default function Application() {
     ? categoryDetails.Requirements.split(',').map((r) => r.trim())
     : [];
 
-  const handleDownloadForm = () => {
-    if (categoryDetails?.templateDownloadUrl) {
-      window.open(categoryDetails.templateDownloadUrl, '_blank');
-    } else {
-      alert('No template available for this category.');
+  // Download the template using the new API
+  const handleDownloadForm = async () => {
+    if (!categoryDetails) return;
+    try {
+      const blob = await downloadSupplierCategoryTemplate(categoryDetails.id);
+      // Try to get filename from Content-Disposition or fallback
+      const filename = categoryDetails.name ? `${categoryDetails.name}-template.pdf` : 'template.pdf';
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(err.message || 'Template document not found on server');
     }
   };
 
