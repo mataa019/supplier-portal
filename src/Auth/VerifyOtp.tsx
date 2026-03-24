@@ -84,7 +84,7 @@ export default function VerifyOtp() {
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
             <div className="flex flex-col items-center mb-6 sm:mb-8">
                 <img src={Logo} alt="Minet Zambia" className="h-10 sm:h-14 mb-3" />
-                <h2 className="text-xl font-semibold text-gray-900">Verify Email</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Verify Otp</h2>
                 <p className="text-sm text-gray-500 mt-2 text-center">
                     Enter the OTP sent to your email {email && <span className="font-medium text-gray-900">{email}</span>}
                 </p>
