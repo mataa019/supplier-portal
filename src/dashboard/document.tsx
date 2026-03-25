@@ -148,10 +148,11 @@ export default function Documents() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      {/* Category Info */}
+      {/* Category Info - Compact Badge */}
       <div className="mb-4">
-        <span className="inline-block px-3 py-1 bg-gray-200 text-gray-800 rounded-full text-sm font-medium">
-          Category: {categoryName || 'Loading...'}
+        <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">
+          <DocumentCheckIcon className="w-4 h-4" />
+          {categoryName || 'Selected Category'}
         </span>
       </div>
       {/* Header */}
