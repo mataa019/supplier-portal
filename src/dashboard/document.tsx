@@ -15,7 +15,7 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import LoadingOverlay from '../component/LoadingOverlay';
-import { createApplication } from '../apiservice/Apiservice';
+import { createApplication, uploadApplicationDocument, type ApplicationResponse } from '../apiservice/Apiservice';
 
 interface UploadedFile {
   name: string;
@@ -35,6 +35,7 @@ export default function Documents() {
   const navigate = useNavigate();
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile | null>>({});
   const [isSaving, setIsSaving] = useState(false);
+
 
   const categoryId = searchParams.get('category');
 
@@ -73,10 +74,21 @@ export default function Documents() {
   const handleProceed = async () => {
     if (!categoryId) return;
     try {
-      await createApplication({ categoryId });
+      const app = await createApplication({ categoryId });
+      for (const doc of documentTypes) {
+        const uploaded = uploadedFiles[doc.id];
+        if (uploaded) {
+          await uploadApplicationDocument({
+            applicationId: app.id,
+            file: uploaded.file,
+            type: doc.id,
+            description: doc.label,
+          });
+        }
+      }
       navigate(`/dashboard/payment?category=${categoryId}`);
     } catch (err: any) {
-      alert(err.message || 'Failed to create application');
+      alert(err.message || 'Failed to create application or upload documents');
     }
   };
 

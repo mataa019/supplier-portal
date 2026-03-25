@@ -1,3 +1,4 @@
+
 type AppEnv = ImportMetaEnv & {
 	VITE_API_BASE_URL?: string
 }
@@ -205,15 +206,43 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 };
 
 // Create Application endpoint
+export interface ApplicationCategory {
+  id: string;
+  name: string;
+  description: string;
+  applicationFee: number;
+  Requirements: string;
+  documentTemplate: string;
+  status: string;
+}
+
+export interface ApplicationDocument {
+  // Define according to your backend response if needed
+}
+
+export interface ApplicationPayment {
+  // Define according to your backend response if needed
+}
+
+export interface ApplicationResponse {
+  id: string;
+  supplierId: string;
+  categoryId: string;
+  status: string;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  remarks: string | null;
+  createdAt: string;
+  category: ApplicationCategory;
+  documents: ApplicationDocument[];
+  payments: ApplicationPayment[];
+}
+
 export interface CreateApplicationPayload {
   categoryId: string;
 }
-export interface ApplicationResponse {
-  id: string;
-  categoryId: string;
-  status: string;
-  createdAt: string;
-}
+
 export const createApplication = async (payload: CreateApplicationPayload): Promise<ApplicationResponse> => {
   const response = await fetch(createApiUrl('/application'), {
     method: 'POST',
@@ -254,5 +283,23 @@ export const uploadApplicationDocument = async ({ applicationId, file, type, des
     throw new Error(errorData.message || 'Failed to upload document');
   }
 };
+
+// Submit application endpoint
+export interface SubmitApplicationPayload {
+  declarationAccepted: boolean;
+}
+
+export const submitApplication = async (applicationId: string, payload: SubmitApplicationPayload): Promise<void> => {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}/submit`), {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to submit application');
+  }
+};
+
 
 
