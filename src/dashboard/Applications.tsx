@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+// Import ApplicationResponse type if available
+import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Apiservice';
+import { fetchApplicationDocuments, getApplication } from '../apiservice/Apiservice';
 import {
   FunnelIcon,
   DocumentTextIcon,
@@ -10,47 +13,41 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
-const applications = [
-  {
-    id: 'APP-2026-0001',
-    category: 'Construction Materials',
-    status: 'pending' as const,
-    submittedDate: '2026-03-05',
-    lastUpdated: '2026-03-08',
-    fee: 'K2,500',
+// Example: Accept applications as props or fetch from backend
+// For now, use a single submitted application as an example
+const exampleSubmittedApplication: ApplicationResponse = {
+  id: 'cmn5rak2400097z0dmxo5rotp',
+  supplierId: 'cmn5pj3xz0001sndfdubiy6um',
+  categoryId: 'cmn5plg0f00006fqmy5zws1tc',
+  status: 'submitted',
+  submittedAt: '2026-03-25T08:12:45.135Z',
+  reviewedAt: null,
+  reviewedBy: null,
+  remarks: null,
+  createdAt: '2026-03-25T08:02:56.909Z',
+  category: {
+    id: 'cmn5plg0f00006fqmy5zws1tc',
+    name: 'Operating Systems',
+    description: 'For general goods and services suppliers',
+    applicationFee: 300,
+    Requirements: 'Business registration certificate, TPIN certificate',
+    documentTemplate: 'string',
+    status: 'active',
   },
-  {
-    id: 'APP-2026-0002',
-    category: 'Office Supplies',
-    status: 'approved' as const,
-    submittedDate: '2026-02-20',
-    lastUpdated: '2026-02-28',
-    fee: 'K1,500',
-  },
-  {
-    id: 'APP-2025-0089',
-    category: 'IT Equipment & Services',
-    status: 'rejected' as const,
-    submittedDate: '2025-12-15',
-    lastUpdated: '2025-12-30',
-    fee: 'K3,000',
-  },
-  {
-    id: 'APP-2026-0003',
-    category: 'Cleaning Services',
-    status: 'payment_pending' as const,
-    submittedDate: '2026-03-08',
-    lastUpdated: '2026-03-08',
-    fee: 'K1,000',
-  },
-  {
-    id: 'APP-2026-0004',
-    category: 'Security Services',
-    status: 'draft' as const,
-    lastUpdated: '2026-03-09',
-    fee: 'K2,000',
-  },
-];
+  documents: [
+    {
+      id: 'cmn5rbk03000b7z0di2jfu6s1',
+      applicationId: 'cmn5rak2400097z0dmxo5rotp',
+      type: 'tax_certificate',
+      fileName: 'Minet Zambia - Basic  Excel Training Quotation.pdf',
+      filePath: 'uploads\\application-documents\\8c75605a-db7a-4a2d-8b95-0f30adfc745c.pdf',
+      uploadedAt: '2026-03-25T08:03:43.491Z',
+    },
+  ],
+  payments: [],
+};
+
+const applications: ApplicationResponse[] = [exampleSubmittedApplication];
 
 const statusOptions = [
   { value: '', label: 'All Statuses' },
@@ -70,15 +67,29 @@ const statusIcons = {
 
 export default function Applications() {
   const [statusFilter, setStatusFilter] = useState('');
-  const [selectedApp, setSelectedApp] = useState<typeof applications[0] | null>(null);
+  const [selectedApp, setSelectedApp] = useState<ApplicationResponse | null>(null);
+  const [documents, setDocuments] = useState<ApplicationDocument[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [docsError, setDocsError] = useState<string | null>(null);
 
   const filteredApplications = statusFilter
     ? applications.filter((app) => app.status === statusFilter)
     : applications;
 
-  const handleViewApplication = (id: string) => {
-    const app = applications.find((a) => a.id === id);
-    setSelectedApp(app || null);
+  const handleViewApplication = async (id: string) => {
+    setSelectedApp(null);
+    setDocuments([]);
+    setDocsError(null);
+    setLoadingDocs(true);
+    try {
+      const app = await getApplication(id);
+      setSelectedApp(app);
+      setDocuments(app.documents || []);
+    } catch (e: any) {
+      setDocsError(e.message || 'Failed to load application details');
+    } finally {
+      setLoadingDocs(false);
+    }
   };
 
   // Stats
@@ -86,6 +97,7 @@ export default function Applications() {
     total: applications.length,
     draft: applications.filter((a) => a.status === 'draft').length,
     payment_pending: applications.filter((a) => a.status === 'payment_pending').length,
+    submitted: applications.filter((a) => a.status === 'submitted').length,
   };
 
   return (
@@ -152,39 +164,34 @@ export default function Applications() {
           {filteredApplications.length > 0 ? (
             <div className="space-y-4">
               {filteredApplications.map((app) => {
-                const StatusIcon = statusIcons[app.status];
+                // Use category.name and category.applicationFee from backend
+                const StatusIcon = statusIcons[app.status as keyof typeof statusIcons] || DocumentTextIcon;
                 return (
                   <div key={app.id} className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-base font-semibold text-gray-900">{app.category}</h3>
+                        <h3 className="text-base font-semibold text-gray-900">{app.category?.name || '—'}</h3>
                         <p className="text-sm text-gray-500">{app.id}</p>
                       </div>
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusColors[app.status].bg} ${statusColors[app.status].text}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusColors[app.status as keyof typeof statusColors]?.bg || 'bg-gray-100'} ${statusColors[app.status as keyof typeof statusColors]?.text || 'text-gray-700'}`}>
                         <StatusIcon className="w-3.5 h-3.5" />
-                        {app.status === 'draft' && 'Draft'}
-                        {app.status === 'pending' && 'Under Review'}
-                        {app.status === 'approved' && 'Approved'}
-                        {app.status === 'rejected' && 'Rejected'}
-                        {app.status === 'payment_pending' && 'Payment Pending'}
+                        {app.status.charAt(0).toUpperCase() + app.status.slice(1).replace('_', ' ')}
                       </span>
                     </div>
-                    
                     <div className="grid grid-cols-3 gap-4 text-sm mb-5 py-4 border-t border-b border-gray-100">
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Application Fee</p>
-                        <p className="font-medium text-gray-900">{app.fee}</p>
+                        <p className="font-medium text-gray-900">K{app.category?.applicationFee ?? '—'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Submitted</p>
-                        <p className="font-medium text-gray-900">{app.submittedDate || '—'}</p>
+                        <p className="font-medium text-gray-900">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : '—'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Last Updated</p>
-                        <p className="font-medium text-gray-900">{app.lastUpdated}</p>
+                        <p className="font-medium text-gray-900">{app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}</p>
                       </div>
                     </div>
-                    
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleViewApplication(app.id)}
@@ -192,24 +199,7 @@ export default function Applications() {
                       >
                         View Details
                       </button>
-                      {app.status === 'draft' && (
-                        <button className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                          Continue
-                          <ArrowRightIcon className="w-4 h-4" />
-                        </button>
-                      )}
-                      {app.status === 'payment_pending' && (
-                        <button className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                          Complete Payment
-                          <ArrowRightIcon className="w-4 h-4" />
-                        </button>
-                      )}
-                      {app.status === 'rejected' && (
-                        <button className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
-                          Reapply
-                          <ArrowRightIcon className="w-4 h-4" />
-                        </button>
-                      )}
+                      {/* Add payment or continue buttons as needed for draft/payment_pending */}
                     </div>
                   </div>
                 );
@@ -239,7 +229,6 @@ export default function Applications() {
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              
               <div className="space-y-4 text-sm">
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Reference</p>
@@ -247,52 +236,43 @@ export default function Applications() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Category</p>
-                  <p className="font-medium text-gray-900">{selectedApp.category}</p>
+                  <p className="font-medium text-gray-900">{selectedApp.category?.name || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Fee Paid</p>
-                  <p className="font-medium text-gray-900">{selectedApp.fee}</p>
+                  <p className="text-xs text-gray-400 mb-1">Fee</p>
+                  <p className="font-medium text-gray-900">K{selectedApp.category?.applicationFee ?? '—'}</p>
                 </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="mt-6 pt-5 border-t border-gray-100">
-                <h4 className="text-sm font-medium text-gray-900 mb-4">Activity Timeline</h4>
-                <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="w-2 h-2 mt-1.5 rounded-full bg-red-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Application Submitted</p>
-                      <p className="text-xs text-gray-500">{selectedApp.submittedDate}</p>
-                    </div>
-                  </div>
-                  {selectedApp.status === 'pending' && (
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 mt-1.5 rounded-full bg-yellow-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Under Review</p>
-                        <p className="text-xs text-gray-500">Being processed by admin</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedApp.status === 'approved' && (
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 mt-1.5 rounded-full bg-green-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Application Approved</p>
-                        <p className="text-xs text-gray-500">{selectedApp.lastUpdated}</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedApp.status === 'rejected' && (
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 mt-1.5 rounded-full bg-red-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Application Rejected</p>
-                        <p className="text-xs text-gray-500">{selectedApp.lastUpdated}</p>
-                        <p className="text-xs text-red-600 mt-1">Reason: Incomplete documentation</p>
-                      </div>
-                    </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Status</p>
+                  <p className="font-medium text-gray-900">{selectedApp.status.charAt(0).toUpperCase() + selectedApp.status.slice(1).replace('_', ' ')}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Submitted At</p>
+                  <p className="font-medium text-gray-900">{selectedApp.submittedAt ? new Date(selectedApp.submittedAt).toLocaleString() : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Created At</p>
+                  <p className="font-medium text-gray-900">{selectedApp.createdAt ? new Date(selectedApp.createdAt).toLocaleString() : '—'}</p>
+                </div>
+                {/* Documents */}
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Documents</p>
+                  {loadingDocs ? (
+                    <span className="text-xs text-blue-600">Loading documents...</span>
+                  ) : docsError ? (
+                    <span className="text-xs text-red-600">{docsError}</span>
+                  ) : (
+                    <ul className="list-disc ml-5">
+                      {documents.length === 0 ? (
+                        <li className="text-gray-500">No documents found</li>
+                      ) : (
+                        documents.map((doc) => (
+                          <li key={doc.id} className="text-gray-700">
+                            {doc.fileName} <span className="text-xs text-gray-400">({doc.type})</span>
+                          </li>
+                        ))
+                      )}
+                    </ul>
                   )}
                 </div>
               </div>

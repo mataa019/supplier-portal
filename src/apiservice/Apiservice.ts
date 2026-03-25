@@ -1,3 +1,16 @@
+// Get a single application by ID
+export const getApplication = async (applicationId: string): Promise<ApplicationResponse> => {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}`), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch application');
+  }
+  return response.json();
+};
+
 
 type AppEnv = ImportMetaEnv & {
 	VITE_API_BASE_URL?: string
@@ -217,7 +230,12 @@ export interface ApplicationCategory {
 }
 
 export interface ApplicationDocument {
-  // Define according to your backend response if needed
+  id: string;
+  applicationId: string;
+  type: string;
+  fileName: string;
+  filePath: string;
+  uploadedAt: string;
 }
 
 export interface ApplicationPayment {
@@ -299,6 +317,18 @@ export const submitApplication = async (applicationId: string, payload: SubmitAp
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to submit application');
   }
+};
+// List application documents
+export const fetchApplicationDocuments = async (applicationId: string): Promise<ApplicationDocument[]> => {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}/documents`), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch application documents');
+  }
+  return response.json();
 };
 
 
