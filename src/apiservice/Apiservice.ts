@@ -287,9 +287,10 @@ export interface UploadApplicationDocumentParams {
 
 export const uploadApplicationDocument = async ({ applicationId, file, type, description }: UploadApplicationDocumentParams): Promise<void> => {
   const formData = new FormData();
+  // Backend expects files[] (array) and documents (JSON array of metadata)
   formData.append('files', file);
-  formData.append('type', type);
-  if (description) formData.append('description', description);
+  const documentsMeta = [{ type, description }];
+  formData.append('documents', JSON.stringify(documentsMeta));
 
   const response = await fetch(createApiUrl(`/applications/${applicationId}/documents`), {
     method: 'POST',
