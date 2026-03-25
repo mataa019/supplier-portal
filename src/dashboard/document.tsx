@@ -16,6 +16,7 @@ import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import LoadingOverlay from '../component/LoadingOverlay';
 import { createApplication, uploadApplicationDocument, submitApplication, type ApplicationResponse } from '../apiservice/Apiservice';
+import { fetchSupplierCategoryById } from '../apiservice/Apiservice';
 
 interface UploadedFile {
   name: string;
@@ -31,6 +32,7 @@ const documentTypes = [
 ];
 
 export default function Documents() {
+  const [categoryName, setCategoryName] = useState<string>('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile | null>>({});
@@ -40,6 +42,15 @@ export default function Documents() {
 
 
   const categoryId = searchParams.get('category');
+
+  // Fetch category name from backend
+  useEffect(() => {
+    if (categoryId) {
+      fetchSupplierCategoryById(categoryId)
+        .then((cat) => setCategoryName(cat.name))
+        .catch(() => setCategoryName('Unknown Category'));
+    }
+  }, [categoryId]);
 
   useEffect(() => {
     // Initialize uploaded files state and upload status
@@ -137,6 +148,12 @@ export default function Documents() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {/* Category Info */}
+      <div className="mb-4">
+        <span className="inline-block px-3 py-1 bg-gray-200 text-gray-800 rounded-full text-sm font-medium">
+          Category: {categoryName || 'Loading...'}
+        </span>
+      </div>
       {/* Header */}
       {isSaving && <LoadingOverlay message="Saving Draft..." />}
       <div className="mb-6 sm:mb-8">
