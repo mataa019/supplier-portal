@@ -34,18 +34,23 @@ export default function Documents() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile | null>>({});
+  // Track upload status for each document
+  const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'uploading' | 'success' | 'error'>>({});
   const [isSaving, setIsSaving] = useState(false);
 
 
   const categoryId = searchParams.get('category');
 
   useEffect(() => {
-    // Initialize uploaded files state
-    const initialState: Record<string, UploadedFile | null> = {};
+    // Initialize uploaded files state and upload status
+    const initialFiles: Record<string, UploadedFile | null> = {};
+    const initialStatus: Record<string, 'idle'> = {};
     documentTypes.forEach((doc) => {
-      initialState[doc.id] = null;
+      initialFiles[doc.id] = null;
+      initialStatus[doc.id] = 'idle';
     });
-    setUploadedFiles(initialState);
+    setUploadedFiles(initialFiles);
+    setUploadStatus(initialStatus);
   }, []);
 
   const handleFileSelect = (docId: string) => (file: File | null) => {
@@ -70,27 +75,42 @@ export default function Documents() {
     alert('Draft saved successfully!');
   };
 
-  // Create application and upload documents, then submit
+  // Create application and upload documents, then enable submit
+  const [uploading, setUploading] = useState(false);
   const handleProceed = async () => {
     if (!categoryId) return;
+    setUploading(true);
     try {
       const app = await createApplication({ categoryId });
+      let allSuccess = true;
       for (const doc of documentTypes) {
         const uploaded = uploadedFiles[doc.id];
         if (uploaded) {
-          await uploadApplicationDocument({
-            applicationId: app.id,
-            file: uploaded.file,
-            type: doc.id,
-            description: doc.label,
-          });
+          setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
+          try {
+            await uploadApplicationDocument({
+              applicationId: app.id,
+              file: uploaded.file,
+              type: doc.id,
+              description: doc.label,
+            });
+            setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
+          } catch (e) {
+            setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
+            allSuccess = false;
+          }
         }
       }
-      // After uploading, allow user to submit
-      setShowSubmit(true);
-      setCreatedAppId(app.id);
+      if (allSuccess) {
+        setShowSubmit(true);
+        setCreatedAppId(app.id);
+      } else {
+        alert('Some documents failed to upload. Please retry.');
+      }
     } catch (err: any) {
       alert(err.message || 'Failed to create application or upload documents');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -147,16 +167,26 @@ export default function Documents() {
               {documentTypes
                 .filter((doc) => doc.required)
                 .map((doc) => (
-                  <FileUpload
-                    key={doc.id}
-                    id={doc.id}
-                    label={doc.label}
-                    required
-                    onFileSelect={handleFileSelect(doc.id)}
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    maxSize={10}
-                    hint="PDF, DOC, or image files up to 10MB"
-                  />
+                  <div key={doc.id} className="space-y-1">
+                    <FileUpload
+                      id={doc.id}
+                      label={doc.label}
+                      required
+                      onFileSelect={handleFileSelect(doc.id)}
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      hint="PDF, DOC, or image files up to 10MB"
+                    />
+                    {uploadStatus[doc.id] === 'uploading' && (
+                      <span className="text-xs text-blue-600">Uploading...</span>
+                    )}
+                    {uploadStatus[doc.id] === 'success' && (
+                      <span className="text-xs text-green-600">Uploaded successfully</span>
+                    )}
+                    {uploadStatus[doc.id] === 'error' && (
+                      <span className="text-xs text-red-600">Upload failed. Please retry.</span>
+                    )}
+                  </div>
                 ))}
             </div>
           </div>
@@ -171,15 +201,25 @@ export default function Documents() {
               {documentTypes
                 .filter((doc) => !doc.required)
                 .map((doc) => (
-                  <FileUpload
-                    key={doc.id}
-                    id={doc.id}
-                    label={doc.label}
-                    onFileSelect={handleFileSelect(doc.id)}
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    maxSize={10}
-                    hint="PDF, DOC, or image files up to 10MB"
-                  />
+                  <div key={doc.id} className="space-y-1">
+                    <FileUpload
+                      id={doc.id}
+                      label={doc.label}
+                      onFileSelect={handleFileSelect(doc.id)}
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      hint="PDF, DOC, or image files up to 10MB"
+                    />
+                    {uploadStatus[doc.id] === 'uploading' && (
+                      <span className="text-xs text-blue-600">Uploading...</span>
+                    )}
+                    {uploadStatus[doc.id] === 'success' && (
+                      <span className="text-xs text-green-600">Uploaded successfully</span>
+                    )}
+                    {uploadStatus[doc.id] === 'error' && (
+                      <span className="text-xs text-red-600">Upload failed. Please retry.</span>
+                    )}
+                  </div>
                 ))}
             </div>
           </div>
@@ -201,9 +241,10 @@ export default function Documents() {
             ) : (
               <button
                 onClick={handleSubmitApplication}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
+                disabled={uploading}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Submit Application
+                {uploading ? 'Uploading...' : 'Submit Application'}
                 <CheckCircleSolid className="w-4 h-4" />
               </button>
             )}

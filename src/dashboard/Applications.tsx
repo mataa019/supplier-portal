@@ -2,15 +2,11 @@ import { useState } from 'react';
 import {
   FunnelIcon,
   DocumentTextIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
   CurrencyDollarIcon,
   XMarkIcon,
   ArrowRightIcon,
   LightBulbIcon,
   ClipboardDocumentListIcon,
-  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
