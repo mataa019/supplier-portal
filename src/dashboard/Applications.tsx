@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 // Import ApplicationResponse type if available
 import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Apiservice';
-import { fetchApplicationDocuments, getApplication, withdrawApplication } from '../apiservice/Apiservice';
+import { fetchApplicationDocuments, getApplication, withdrawApplication, updateApplication } from '../apiservice/Apiservice';
+    const [updatingCategory, setUpdatingCategory] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   // Withdraw handler
   
@@ -86,6 +87,23 @@ export default function Applications() {
       alert(e.message || 'Failed to withdraw application');
     } finally {
       setWithdrawing(false);
+    }
+  };
+
+  // Update category handler
+  const handleUpdateCategory = async () => {
+    if (!selectedApp) return;
+    const newCategoryId = window.prompt('Enter new Category ID:', selectedApp.category?.id || '');
+    if (!newCategoryId || newCategoryId === selectedApp.category?.id) return;
+    setUpdatingCategory(true);
+    try {
+      const updated = await updateApplication(selectedApp.id, newCategoryId);
+      setSelectedApp(updated);
+      alert('Category updated successfully.');
+    } catch (e: any) {
+      alert(e.message || 'Failed to update category');
+    } finally {
+      setUpdatingCategory(false);
     }
   };
 
@@ -233,7 +251,16 @@ export default function Applications() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Category</p>
-                  <p className="font-medium text-gray-900">{selectedApp.category?.name || '—'}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900">{selectedApp.category?.name || '—'}</span>
+                    <button
+                      onClick={handleUpdateCategory}
+                      disabled={updatingCategory}
+                      className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
+                    >
+                      {updatingCategory ? 'Updating...' : 'Change'}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Fee</p>
