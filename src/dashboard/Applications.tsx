@@ -4,22 +4,7 @@ import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Api
 import { fetchApplicationDocuments, getApplication, withdrawApplication } from '../apiservice/Apiservice';
   const [withdrawing, setWithdrawing] = useState(false);
   // Withdraw handler
-  const handleWithdraw = async () => {
-    if (!selectedApp) return;
-    const reason = window.prompt('Please provide a reason for withdrawal:', 'Submitted in error');
-    if (!reason) return;
-    setWithdrawing(true);
-    try {
-      const updated = await withdrawApplication(selectedApp.id, { reason });
-      setSelectedApp(updated);
-      // Optionally update applications list here if needed
-      alert('Application withdrawn successfully.');
-    } catch (e: any) {
-      alert(e.message || 'Failed to withdraw application');
-    } finally {
-      setWithdrawing(false);
-    }
-  };
+  
 import {
   FunnelIcon,
   DocumentTextIcon,
@@ -85,6 +70,22 @@ export default function Applications() {
       setDocsError(e.message || 'Failed to load application details');
     } finally {
       setLoadingDocs(false);
+    }
+  };
+  const handleWithdraw = async () => {
+    if (!selectedApp) return;
+    const reason = window.prompt('Please provide a reason for withdrawal:', 'Submitted in error');
+    if (!reason) return;
+    setWithdrawing(true);
+    try {
+      const updated = await withdrawApplication(selectedApp.id, { reason });
+      setSelectedApp(updated);
+      // Optionally update applications list here if needed
+      alert('Application withdrawn successfully.');
+    } catch (e: any) {
+      alert(e.message || 'Failed to withdraw application');
+    } finally {
+      setWithdrawing(false);
     }
   };
 

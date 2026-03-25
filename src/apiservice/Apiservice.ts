@@ -262,6 +262,20 @@ export const createApplication = async (payload: CreateApplicationPayload): Prom
   return response.json();
 };
 
+// Update Application
+export async function updateApplication(applicationId: string, categoryId: string) {
+  const response = await fetch(`/applications/${applicationId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ categoryId }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update application');
+  }
+  return response.json();
+}
 // Upload document to application
 export interface UploadApplicationDocumentParams {
   applicationId: string;
