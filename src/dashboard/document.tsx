@@ -304,17 +304,7 @@ export default function Documents() {
             </ul>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <div className="flex items-start gap-3">
-              <LightBulbIcon className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Tip</h3>
-                <p className="text-sm text-gray-600">
-                  You can save your progress and return later. Your uploaded documents will be saved as a draft.
-                </p>
-              </div>
-            </div>
-          </div>
+    
         </div>
       </div>
     </div>
