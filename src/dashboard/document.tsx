@@ -15,7 +15,7 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import LoadingOverlay from '../component/LoadingOverlay';
-import { createApplication, uploadApplicationDocument, type ApplicationResponse } from '../apiservice/Apiservice';
+import { createApplication, uploadApplicationDocument, submitApplication, type ApplicationResponse } from '../apiservice/Apiservice';
 
 interface UploadedFile {
   name: string;
@@ -70,7 +70,7 @@ export default function Documents() {
     alert('Draft saved successfully!');
   };
 
-  // Create application when proceeding
+  // Create application and upload documents, then submit
   const handleProceed = async () => {
     if (!categoryId) return;
     try {
@@ -86,9 +86,26 @@ export default function Documents() {
           });
         }
       }
-      navigate(`/dashboard/payment?category=${categoryId}`);
+      // After uploading, allow user to submit
+      setShowSubmit(true);
+      setCreatedAppId(app.id);
     } catch (err: any) {
       alert(err.message || 'Failed to create application or upload documents');
+    }
+  };
+
+  // State for submit step
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [createdAppId, setCreatedAppId] = useState<string | null>(null);
+
+  // Handle submit
+  const handleSubmitApplication = async () => {
+    if (!createdAppId) return;
+    try {
+      await submitApplication(createdAppId, { declarationAccepted: true });
+      navigate('/dashboard/applications');
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit application');
     }
   };
 
@@ -172,14 +189,24 @@ export default function Documents() {
             <Button variant="outline" onClick={handleSaveDraft} disabled={isSaving}>
               {isSaving ? 'Saving...' : 'Save Draft'}
             </Button>
-            <button
-              onClick={handleProceed}
-              disabled={!requiredDocsUploaded}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Proceed to Payment
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
+            {!showSubmit ? (
+              <button
+                onClick={handleProceed}
+                disabled={!requiredDocsUploaded}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Upload & Continue
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitApplication}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Submit Application
+                <CheckCircleSolid className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
