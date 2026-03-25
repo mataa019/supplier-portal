@@ -287,7 +287,7 @@ export interface UploadApplicationDocumentParams {
 
 export const uploadApplicationDocument = async ({ applicationId, file, type, description }: UploadApplicationDocumentParams): Promise<void> => {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('files', file);
   formData.append('type', type);
   if (description) formData.append('description', description);
 

@@ -96,6 +96,8 @@ export default function Documents() {
             });
             setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
           } catch (e) {
+            // Log error details for debugging
+            console.error('Upload failed for', doc.id, e);
             setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
             allSuccess = false;
           }
