@@ -11,7 +11,7 @@ import { getUserProfile } from '../apiservice/Apiservice';
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,30 +24,30 @@ export default function AdminLayout() {
         }
 
         const data = await getUserProfile();
-        setUser(data.user);
-        
-        // Allow both admin and manager roles
-        if (!['admin', 'manager'].includes(data.user.role)) {
-           navigate('/dashboard'); // Limit access if not admin/manager
+        if (!data) {
+          throw new Error('No user data returned');
+        }
+        setUser({ id: data.id, email: data.email, role: data.role });
+
+        if (!['admin', 'manager'].includes(data.role)) {
+          navigate('/dashboard');
         }
       } catch (error) {
         console.error('Failed to fetch profile', error);
-        
-        // Fallback: Check if we have user data in localStorage from login
+
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
-            if (['admin', 'manager'].includes(parsedUser.role)) {
+            if (parsedUser && ['admin', 'manager'].includes(parsedUser.role)) {
               setUser(parsedUser);
-              return; // Stay on page if local data is valid
+              return;
             }
           } catch (e) {
             // Invalid local data
           }
         }
-        
-        // If API fails and no valid local data, redirect
+
         navigate('/login');
       }
     };
@@ -83,7 +83,7 @@ export default function AdminLayout() {
             <div className="flex items-center gap-2">
               <UserCircleIcon className="w-8 h-8 text-gray-400" />
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">{user?.name || 'Admin User'}</p>
+                <p className="text-sm font-medium text-white">{user?.email || 'Admin User'}</p>
                 <p className="text-xs text-gray-400">{user?.role || 'Administrator'}</p>
               </div>
             </div>
