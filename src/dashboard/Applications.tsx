@@ -1,11 +1,7 @@
+
 import { useState, useEffect } from 'react';
-// Import ApplicationResponse type if available
 import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Apiservice';
 import { fetchApplicationDocuments, getApplication, withdrawApplication, updateApplication } from '../apiservice/Apiservice';
-    const [updatingCategory, setUpdatingCategory] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
-  // Withdraw handler
-  
 import {
   FunnelIcon,
   DocumentTextIcon,
@@ -17,27 +13,32 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
+export default function Applications() {
+  const [updatingCategory, setUpdatingCategory] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
 
-// TODO: Replace with real API call to fetch applications list
-// Placeholder: useState for applications
-const [applications, setApplications] = useState<ApplicationResponse[]>([]);
 
-// Example: useEffect to fetch applications from API (implement fetchApplications API as needed)
-useEffect(() => {
-  // async function fetchData() {
-  //   const data = await fetchApplications();
-  //   setApplications(data);
-  // }
-  // fetchData();
-}, []);
 
-const statusOptions = [
+  // TODO: Replace with real API call to fetch applications list
+  // Placeholder: useState for applications
+  const [applications, setApplications] = useState<ApplicationResponse[]>([]);
+
+  // Example: useEffect to fetch applications from API (implement fetchApplications API as needed)
+  useEffect(() => {
+    // async function fetchData() {
+    //   const data = await fetchApplications();
+    //   setApplications(data);
+    // }
+    // fetchData();
+  }, []);
+
+  const statusOptions = [
   { value: '', label: 'All Statuses' },
   { value: 'draft', label: 'Draft' },
   { value: 'payment_pending', label: 'Payment Pending' },
 ];
 
-const statusColors = {
+  const statusColors = {
   draft: { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500' },
   payment_pending: { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' },
 };
@@ -47,7 +48,7 @@ const statusIcons = {
   payment_pending: CurrencyDollarIcon,
 };
 
-export default function Applications() {
+
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedApp, setSelectedApp] = useState<ApplicationResponse | null>(null);
   const [documents, setDocuments] = useState<ApplicationDocument[]>([]);

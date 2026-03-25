@@ -1,3 +1,11 @@
+// Fetch applications for current user
+export async function fetchMyApplications(): Promise<ApplicationResponse[]> {
+  const response = await fetch('/applications/me');
+  if (!response.ok) {
+    throw new Error('Failed to fetch applications');
+  }
+  return response.json();
+}
 
 
 type AppEnv = ImportMetaEnv & {
