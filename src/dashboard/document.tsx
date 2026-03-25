@@ -78,7 +78,11 @@ export default function Documents() {
   // Create application and upload documents, then enable submit
   const [uploading, setUploading] = useState(false);
   const handleProceed = async () => {
-    if (!categoryId) return;
+    if (!categoryId) {
+      alert('No category selected. Please select a category and try again.');
+      console.error('No categoryId found in URL params.');
+      return;
+    }
     setUploading(true);
     try {
       const app = await createApplication({ categoryId });
