@@ -1,11 +1,4 @@
-// Fetch applications for current user
-export async function fetchMyApplications(): Promise<ApplicationResponse[]> {
-  const response = await fetch('/applications/me');
-  if (!response.ok) {
-    throw new Error('Failed to fetch applications');
-  }
-  return response.json();
-}
+
 
 
 type AppEnv = ImportMetaEnv & {
@@ -369,7 +362,18 @@ export const withdrawApplication = async (applicationId: string, payload: Withdr
   }
   return response.json();
 };
-
+// Fetch applications for current user
+export async function fetchMyApplications(): Promise<ApplicationResponse[]> {
+  const response = await fetch(createApiUrl('/applications/me'), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch applications');
+  }
+  return response.json();
+}
 
 
 

@@ -1,37 +1,44 @@
 
 import { useState, useEffect } from 'react';
 import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Apiservice';
-import { fetchApplicationDocuments, getApplication, withdrawApplication, updateApplication } from '../apiservice/Apiservice';
+
+import {
+  getApplication,
+  withdrawApplication,
+  updateApplication,
+  fetchMyApplications,
+} from '../apiservice/Apiservice';
+
 import {
   FunnelIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
   XMarkIcon,
-  ArrowRightIcon,
   LightBulbIcon,
   ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
+
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
 export default function Applications() {
   const [updatingCategory, setUpdatingCategory] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
-
-
-
-  // TODO: Replace with real API call to fetch applications list
-  // Placeholder: useState for applications
+ 
+  
+  // Fetch applications for current user
   const [applications, setApplications] = useState<ApplicationResponse[]>([]);
-
-  // Example: useEffect to fetch applications from API (implement fetchApplications API as needed)
   useEffect(() => {
-    // async function fetchData() {
-    //   const data = await fetchApplications();
-    //   setApplications(data);
-    // }
-    // fetchData();
+    async function fetchData() {
+      try {
+        const data = await fetchMyApplications();
+        setApplications(data);
+      } catch (e: any) {
+        // Optionally handle error (e.g., show notification)
+        setApplications([]);
+      }
+    }
+    fetchData();
   }, []);
-
   const statusOptions = [
   { value: '', label: 'All Statuses' },
   { value: 'draft', label: 'Draft' },
@@ -112,8 +119,7 @@ const statusIcons = {
   const stats = {
     total: applications.length,
     draft: applications.filter((a) => a.status === 'draft').length,
-    payment_pending: applications.filter((a) => a.status === 'payment_pending').length,
-    submitted: applications.filter((a) => a.status === 'submitted').length,
+    payment_pending: applications.filter((a) => a.status === 'payment_pending' || a.status === 'submitted').length,
   };
 
   return (
@@ -144,7 +150,7 @@ const statusIcons = {
             </div>
             <div>
               <p className="text-2xl font-semibold text-orange-600">{stats.payment_pending}</p>
-              <p className="text-xs text-gray-500">Payment Pending</p>
+              <p className="text-xs text-gray-500">Payment Pending / Submitted</p>
             </div>
           </div>
         </div>
@@ -215,7 +221,14 @@ const statusIcons = {
                       >
                         View Details
                       </button>
-                      {/* Add payment or continue buttons as needed for draft/payment_pending */}
+                      {app.status === 'submitted' && (
+                        <button
+                          onClick={() => alert('Payment flow coming soon!')}
+                          className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Make Payment
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
