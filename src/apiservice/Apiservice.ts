@@ -251,7 +251,7 @@ export interface CreateApplicationPayload {
 }
 
 export const createApplication = async (payload: CreateApplicationPayload): Promise<ApplicationResponse> => {
-  const response = await fetch(createApiUrl('/application'), {
+  const response = await fetch(createApiUrl('/applications'), {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
