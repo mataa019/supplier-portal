@@ -1,15 +1,3 @@
-// Get a single application by ID
-export const getApplication = async (applicationId: string): Promise<ApplicationResponse> => {
-  const response = await fetch(createApiUrl(`/applications/${applicationId}`), {
-    method: 'GET',
-    headers: getAuthHeaders(),
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to fetch application');
-  }
-  return response.json();
-};
 
 
 type AppEnv = ImportMetaEnv & {
@@ -330,6 +318,36 @@ export const fetchApplicationDocuments = async (applicationId: string): Promise<
   }
   return response.json();
 };
+// Get a single application by ID
+export const getApplication = async (applicationId: string): Promise<ApplicationResponse> => {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}`), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch application');
+  }
+  return response.json();
+};
+// Withdraw application endpoint
+export interface WithdrawApplicationPayload {
+  reason: string;
+}
+
+export const withdrawApplication = async (applicationId: string, payload: WithdrawApplicationPayload): Promise<ApplicationResponse> => {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}/withdraw`), {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to withdraw application');
+  }
+  return response.json();
+};
+
 
 
 

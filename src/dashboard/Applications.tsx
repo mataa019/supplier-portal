@@ -1,7 +1,25 @@
 import { useState, useEffect } from 'react';
 // Import ApplicationResponse type if available
 import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Apiservice';
-import { fetchApplicationDocuments, getApplication } from '../apiservice/Apiservice';
+import { fetchApplicationDocuments, getApplication, withdrawApplication } from '../apiservice/Apiservice';
+  const [withdrawing, setWithdrawing] = useState(false);
+  // Withdraw handler
+  const handleWithdraw = async () => {
+    if (!selectedApp) return;
+    const reason = window.prompt('Please provide a reason for withdrawal:', 'Submitted in error');
+    if (!reason) return;
+    setWithdrawing(true);
+    try {
+      const updated = await withdrawApplication(selectedApp.id, { reason });
+      setSelectedApp(updated);
+      // Optionally update applications list here if needed
+      alert('Application withdrawn successfully.');
+    } catch (e: any) {
+      alert(e.message || 'Failed to withdraw application');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 import {
   FunnelIcon,
   DocumentTextIcon,
@@ -13,41 +31,19 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
-// Example: Accept applications as props or fetch from backend
-// For now, use a single submitted application as an example
-const exampleSubmittedApplication: ApplicationResponse = {
-  id: 'cmn5rak2400097z0dmxo5rotp',
-  supplierId: 'cmn5pj3xz0001sndfdubiy6um',
-  categoryId: 'cmn5plg0f00006fqmy5zws1tc',
-  status: 'submitted',
-  submittedAt: '2026-03-25T08:12:45.135Z',
-  reviewedAt: null,
-  reviewedBy: null,
-  remarks: null,
-  createdAt: '2026-03-25T08:02:56.909Z',
-  category: {
-    id: 'cmn5plg0f00006fqmy5zws1tc',
-    name: 'Operating Systems',
-    description: 'For general goods and services suppliers',
-    applicationFee: 300,
-    Requirements: 'Business registration certificate, TPIN certificate',
-    documentTemplate: 'string',
-    status: 'active',
-  },
-  documents: [
-    {
-      id: 'cmn5rbk03000b7z0di2jfu6s1',
-      applicationId: 'cmn5rak2400097z0dmxo5rotp',
-      type: 'tax_certificate',
-      fileName: 'Minet Zambia - Basic  Excel Training Quotation.pdf',
-      filePath: 'uploads\\application-documents\\8c75605a-db7a-4a2d-8b95-0f30adfc745c.pdf',
-      uploadedAt: '2026-03-25T08:03:43.491Z',
-    },
-  ],
-  payments: [],
-};
 
-const applications: ApplicationResponse[] = [exampleSubmittedApplication];
+// TODO: Replace with real API call to fetch applications list
+// Placeholder: useState for applications
+const [applications, setApplications] = useState<ApplicationResponse[]>([]);
+
+// Example: useEffect to fetch applications from API (implement fetchApplications API as needed)
+useEffect(() => {
+  // async function fetchData() {
+  //   const data = await fetchApplications();
+  //   setApplications(data);
+  // }
+  // fetchData();
+}, []);
 
 const statusOptions = [
   { value: '', label: 'All Statuses' },
@@ -254,6 +250,16 @@ export default function Applications() {
                   <p className="text-xs text-gray-400 mb-1">Created At</p>
                   <p className="font-medium text-gray-900">{selectedApp.createdAt ? new Date(selectedApp.createdAt).toLocaleString() : '—'}</p>
                 </div>
+                {/* Withdraw Button (show for eligible statuses) */}
+                {['submitted', 'pending', 'payment_pending'].includes(selectedApp.status) && (
+                  <button
+                    onClick={handleWithdraw}
+                    disabled={withdrawing}
+                    className={`mt-2 mb-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 ${withdrawing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
+                  </button>
+                )}
                 {/* Documents */}
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Documents</p>
