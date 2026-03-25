@@ -60,24 +60,15 @@ const statusOptions = [
   { value: '', label: 'All Statuses' },
   { value: 'draft', label: 'Draft' },
   { value: 'payment_pending', label: 'Payment Pending' },
-  { value: 'pending', label: 'Under Review' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
 ];
 
 const statusColors = {
   draft: { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500' },
-  pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', dot: 'bg-yellow-500' },
-  approved: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
-  rejected: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
   payment_pending: { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' },
 };
 
 const statusIcons = {
   draft: DocumentTextIcon,
-  pending: ClockIcon,
-  approved: CheckCircleIcon,
-  rejected: XCircleIcon,
   payment_pending: CurrencyDollarIcon,
 };
 
@@ -97,9 +88,8 @@ export default function Applications() {
   // Stats
   const stats = {
     total: applications.length,
-    pending: applications.filter((a) => a.status === 'pending').length,
-    approved: applications.filter((a) => a.status === 'approved').length,
-    rejected: applications.filter((a) => a.status === 'rejected').length,
+    draft: applications.filter((a) => a.status === 'draft').length,
+    payment_pending: applications.filter((a) => a.status === 'payment_pending').length,
   };
 
   return (
@@ -111,7 +101,7 @@ export default function Applications() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
@@ -125,34 +115,12 @@ export default function Applications() {
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-50 rounded-lg">
-              <ClockIcon className="w-5 h-5 text-yellow-600" />
+            <div className="p-2 bg-orange-50 rounded-lg">
+              <CurrencyDollarIcon className="w-5 h-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-2xl font-semibold text-yellow-600">{stats.pending}</p>
-              <p className="text-xs text-gray-500">Under Review</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-green-600">{stats.approved}</p>
-              <p className="text-xs text-gray-500">Approved</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-50 rounded-lg">
-              <XCircleIcon className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-red-600">{stats.rejected}</p>
-              <p className="text-xs text-gray-500">Rejected</p>
+              <p className="text-2xl font-semibold text-orange-600">{stats.payment_pending}</p>
+              <p className="text-xs text-gray-500">Payment Pending</p>
             </div>
           </div>
         </div>
@@ -365,21 +333,14 @@ export default function Applications() {
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Legend</h3>
             <ul className="text-sm space-y-3">
-              {Object.entries(statusColors).map(([status, colors]) => {
-                const Icon = statusIcons[status as keyof typeof statusIcons];
-                return (
-                  <li key={status} className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${colors.text}`} />
-                    <span className="text-gray-600">
-                      {status === 'draft' && 'Draft - Not yet submitted'}
-                      {status === 'pending' && 'Pending - Under review'}
-                      {status === 'approved' && 'Approved - Ready to supply'}
-                      {status === 'rejected' && 'Rejected - See reason'}
-                      {status === 'payment_pending' && 'Payment Pending'}
-                    </span>
-                  </li>
-                );
-              })}
+              <li className="flex items-center gap-3">
+                <DocumentTextIcon className="w-4 h-4 text-gray-700" />
+                <span className="text-gray-600">Draft - Not yet submitted</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <CurrencyDollarIcon className="w-4 h-4 text-orange-700" />
+                <span className="text-gray-600">Payment Pending</span>
+              </li>
             </ul>
           </div>
         </div>
