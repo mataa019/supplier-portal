@@ -15,8 +15,8 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import LoadingOverlay from '../component/LoadingOverlay';
-import { createApplication, uploadApplicationDocument, submitApplication, type ApplicationResponse } from '../apiservice/Apiservice';
-import { fetchSupplierCategoryById } from '../apiservice/Apiservice';
+import { createApplication, uploadApplicationDocument, submitApplication, fetchSupplierCategories, fetchSupplierCategoryById, type SupplierCategory, type ApplicationResponse } from '../apiservice/Apiservice';
+import Select from '../component/Select';
 
 interface UploadedFile {
   name: string;
@@ -31,7 +31,8 @@ const documentTypes = [
   { id: 'references', label: 'Current trade referencess', required: false },
 ];
 
-export default function Documents() {
+  const [categories, setCategories] = useState<SupplierCategory[]>([]);
+  const [categoryId, setCategoryId] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -40,15 +41,25 @@ export default function Documents() {
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'uploading' | 'success' | 'error'>>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  // On mount, fetch all categories
+  useEffect(() => {
+    fetchSupplierCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
-  const categoryId = searchParams.get('category');
+  // If category is in URL, set as initial value
+  useEffect(() => {
+    const urlCategory = searchParams.get('category');
+    if (urlCategory) setCategoryId(urlCategory);
+  }, [searchParams]);
 
-  // Fetch category name from backend
+  // Fetch category name from backend when categoryId changes
   useEffect(() => {
     if (categoryId) {
       fetchSupplierCategoryById(categoryId)
         .then((cat) => setCategoryName(cat.name))
         .catch(() => setCategoryName('Unknown Category'));
+    } else {
+      setCategoryName('');
     }
   }, [categoryId]);
 
@@ -80,7 +91,7 @@ export default function Documents() {
 
   const handleSaveDraft = async () => {
     setIsSaving(true);
-    // Simulate save
+    // Simulate save (should call API in real app)
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
     alert('Draft saved successfully!');
@@ -91,13 +102,12 @@ export default function Documents() {
   const handleProceed = async () => {
     if (!categoryId) {
       alert('No category selected. Please select a category and try again.');
-      console.error('No categoryId found in URL params.');
       return;
     }
     setUploading(true);
     try {
       const app = await createApplication({ categoryId });
-      // Gather all files and metadata
+      // ...existing code...
       const files: File[] = [];
       const documentsMeta: { type: string; description: string }[] = [];
       for (const doc of documentTypes) {
@@ -109,15 +119,12 @@ export default function Documents() {
         }
       }
       if (files.length > 0) {
-        // Use the first file and first metadata for compatibility with current uploadApplicationDocument signature
-        // (If you want to support true multi-file upload, update the API and function signature accordingly)
         await uploadApplicationDocument({
           applicationId: app.id,
           file: files[0],
           type: documentsMeta[0].type,
           description: documentsMeta[0].description,
         });
-        // Mark all as success for now
         documentTypes.forEach((doc) => {
           if (uploadedFiles[doc.id]) {
             setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
@@ -152,13 +159,26 @@ export default function Documents() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      {/* Category Info - Compact Badge */}
-      <div className="mb-4">
-        <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">
-          <DocumentCheckIcon className="w-4 h-4" />
-          {categoryName || 'Selected Category'}
-        </span>
+      {/* Category Selector */}
+      <div className="mb-4 max-w-xs">
+        <Select
+          id="category"
+          label="Select Category"
+          value={categoryId}
+          onChange={e => setCategoryId(e.target.value)}
+          options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
+          required
+        />
       </div>
+      {/* Category Info - Compact Badge */}
+      {categoryName && (
+        <div className="mb-4">
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">
+            <DocumentCheckIcon className="w-4 h-4" />
+            {categoryName}
+          </span>
+        </div>
+      )}
       {/* Header */}
       {isSaving && <LoadingOverlay message="Saving Draft..." />}
       <div className="mb-6 sm:mb-8">
@@ -336,3 +356,4 @@ export default function Documents() {
     </div>
   );
 }
+
