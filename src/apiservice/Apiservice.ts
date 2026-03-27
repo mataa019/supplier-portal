@@ -16,11 +16,13 @@ export const createApiUrl = (endpoint: string) => {
 	return `${API_BASE_URL}${normalizedEndpoint}`
 }
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token');
+  // Debug: log the token being used for Authorization
+  console.log('getAuthHeaders: token from localStorage:', token);
   return {
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  }
+  };
 }
 
 // Supplier Category Type

@@ -50,19 +50,19 @@ export default function VerifyOtp() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
     try {
       if (!otp) throw new Error('Please enter the OTP');
-
-      // Minimum 1.5s delay for better UX
       const [res] = await Promise.all([
-        verifyOtp({ otp }), // only otp (5 digits)
+        verifyOtp({ otp }),
         new Promise(resolve => setTimeout(resolve, 1500))
       ]);
+      console.log('OTP verification response:', res);
+      const token = res.accessToken;
 
-      if (res.accessToken) localStorage.setItem('token', res.accessToken);
+      // Save token and user in localStorage for app-wide authentication
+      if (token) localStorage.setItem('token', token);
       if (res.user) localStorage.setItem('user', JSON.stringify(res.user));
-      
+
       sessionStorage.removeItem('pendingLoginEmail');
 
       if (res.user?.role === 'admin' || res.user?.role === 'manager') {
