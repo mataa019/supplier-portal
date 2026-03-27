@@ -49,7 +49,9 @@ export const fetchSupplierCategories = async (): Promise<SupplierCategory[]> => 
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch supplier categories');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('fetchSupplierCategories success:', data);
+  return data;
 };
 
 // Fetch a supplier category by ID
@@ -62,7 +64,9 @@ export const fetchSupplierCategoryById = async (categoryId: string): Promise<Sup
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch supplier category');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('fetchSupplierCategoryById success:', data);
+  return data;
 };
 
 // Download supplier category template document
@@ -75,7 +79,9 @@ export const downloadSupplierCategoryTemplate = async (categoryId: string): Prom
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Template document not found on server');
   }
-  return response.blob();
+  const data = await response.blob();
+  console.log('downloadSupplierCategoryTemplate success:', data);
+  return data;
 };
 
 export interface RegisterPayload {
@@ -101,7 +107,9 @@ export const registerSupplier = async (payload: RegisterPayload) => {
     throw new Error(errorData.message || 'Registration failed')
   }
 
-  return response.json()
+  const data = await response.json();
+  console.log('registerSupplier success:', data);
+  return data;
 }
 
 export interface LoginPayload {
@@ -123,7 +131,9 @@ export const loginUser = async (payload: LoginPayload) => {
     throw new Error(errorData.message || 'Login failed Check your connection')
   }
 
-  return response.json()
+  const data = await response.json();
+  console.log('loginUser success:', data);
+  return data;
 }
 
 export interface VerifyOtpPayload {
@@ -145,7 +155,9 @@ export const verifyOtp = async (payload: VerifyOtpPayload) => {
     throw new Error(errorData.message || 'OTP verification failed')
   }
 
-  return response.json()
+  const data = await response.json();
+  console.log('verifyOtp success:', data); 
+  return data;
 }
 
 export interface ResendOtpPayload {
@@ -166,7 +178,9 @@ export const resendOtp = async (payload: ResendOtpPayload) => {
     throw new Error(errorData.message || 'Resend OTP failed')
   }
 
-  return response.json()
+  const data = await response.json();
+  console.log('resendOtp success:', data);
+  return data;
 }
 
 
@@ -206,7 +220,9 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch profile');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('get UserProfile success:', data);
+  return data;
 };
 
 // Create Application endpoint
@@ -262,7 +278,9 @@ export const createApplication = async (payload: CreateApplicationPayload): Prom
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to create application');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('create Application success:', data);
+  return data;
 };
 
 // Update Application
@@ -277,7 +295,9 @@ export async function updateApplication(applicationId: string, categoryId: strin
   if (!response.ok) {
     throw new Error('Failed to update application');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('update Application success:', data);
+  return data;
 }
 // Upload document to application
 export interface UploadApplicationDocumentParams {
@@ -298,7 +318,6 @@ export const uploadApplicationDocument = async ({ applicationId, file, type, des
     method: 'POST',
     headers: {
       ...(getAuthHeaders().Authorization ? { 'Authorization': getAuthHeaders().Authorization } : {})
-      // Do not set Content-Type for FormData; browser will set it
     },
     body: formData,
   });
@@ -306,6 +325,7 @@ export const uploadApplicationDocument = async ({ applicationId, file, type, des
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to upload document');
   }
+  console.log('upload Application Document success');
 };
 
 // Submit application endpoint
@@ -334,7 +354,9 @@ export const fetchApplicationDocuments = async (applicationId: string): Promise<
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch application documents');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('fetch ApplicationDocuments success:', data);
+  return data;
 };
 // Get a single application by ID
 export const getApplication = async (applicationId: string): Promise<ApplicationResponse> => {
@@ -346,7 +368,9 @@ export const getApplication = async (applicationId: string): Promise<Application
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch application');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('get Application success:', data);
+  return data;
 };
 // Withdraw application endpoint
 export interface WithdrawApplicationPayload {
@@ -363,7 +387,9 @@ export const withdrawApplication = async (applicationId: string, payload: Withdr
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to withdraw application');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('withdrawApplication success:', data);
+  return data;
 };
 // Fetch applications for current user
 export async function fetchMyApplications(): Promise<ApplicationResponse[]> {
@@ -375,7 +401,9 @@ export async function fetchMyApplications(): Promise<ApplicationResponse[]> {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch applications');
   }
-  return response.json();
+  const data = await response.json();
+  console.log('fetch MyApplications success:', data);
+  return data;
 }
 
 
