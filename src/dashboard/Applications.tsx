@@ -7,7 +7,24 @@ import {
   withdrawApplication,
   updateApplication,
   fetchMyApplications,
+  fetchApplicationDocuments,
+  deleteApplication,
 } from '../apiservice/Apiservice';
+  // Delete handler
+  const handleDelete = async () => {
+    if (!selectedApp) return;
+    if (!window.confirm('Are you sure you want to permanently delete this application?')) return;
+    try {
+      await deleteApplication(selectedApp.id);
+      alert('Application deleted successfully.');
+      setSelectedApp(null);
+      // Refresh applications list
+      const data = await fetchMyApplications();
+      setApplications(data);
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete application');
+    }
+  };
 
 import {
   FunnelIcon,
@@ -75,7 +92,9 @@ const statusIcons = {
     try {
       const app = await getApplication(id);
       setSelectedApp(app);
-      setDocuments(app.documents || []);
+      // Fetch the full list of documents for this application
+      const docs = await fetchApplicationDocuments(id);
+      setDocuments(docs);
     } catch (e: any) {
       setDocsError(e.message || 'Failed to load application details');
     } finally {
@@ -262,64 +281,72 @@ const statusIcons = {
           )}
         </div>
 
-        {/* Detail Panel / Timeline */}
+        {/* Catalog Display: Application Details as Modal Popup */}
         <div className="space-y-6">
-          {selectedApp ? (
-            loadingDocs ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-6 text-blue-600">Loading documents...</div>
-            ) : docsError ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-6 text-red-600">{docsError}</div>
-            ) : (
-              <ApplicationDetails
-                application={selectedApp}
-                documents={documents}
-                onClose={() => setSelectedApp(null)}
-                onWithdraw={handleWithdraw}
-                withdrawing={withdrawing}
-              />
-            )
-          ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start gap-3">
-                <LightBulbIcon className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick Tips</h3>
-                  <ul className="text-sm text-gray-600 space-y-2">
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Click on an application to see details
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Use filters to find specific applications
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Continue draft applications anytime
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Check your email for status updates
-                    </li>
-                  </ul>
-                </div>
+          {selectedApp && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 backdrop-blur-sm">
+              <div className="relative w-full max-w-lg mx-auto">
+                {loadingDocs ? (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 text-blue-600">Loading documents...</div>
+                ) : docsError ? (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 text-red-600">{docsError}</div>
+                ) : (
+                  <ApplicationDetails
+                    application={selectedApp}
+                    documents={documents}
+                    onClose={() => setSelectedApp(null)}
+                    onWithdraw={handleWithdraw}
+                    withdrawing={withdrawing}
+                    onDelete={selectedApp.status === 'withdrawn' ? handleDelete : undefined}
+                  />
+                )}
               </div>
             </div>
           )}
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Legend</h3>
-            <ul className="text-sm space-y-3">
-              <li className="flex items-center gap-3">
-                <DocumentTextIcon className="w-4 h-4 text-gray-700" />
-                <span className="text-gray-600">Draft - Not yet submitted</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <CurrencyDollarIcon className="w-4 h-4 text-orange-700" />
-                <span className="text-gray-600">Payment Pending</span>
-              </li>
-            </ul>
-          </div>
+          {!selectedApp && (
+            <>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <LightBulbIcon className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick Tips</h3>
+                    <ul className="text-sm text-gray-600 space-y-2">
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Click on an application to see details
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Use filters to find specific applications
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Continue draft applications anytime
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Check your email for status updates
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Legend</h3>
+                <ul className="text-sm space-y-3">
+                  <li className="flex items-center gap-3">
+                    <DocumentTextIcon className="w-4 h-4 text-gray-700" />
+                    <span className="text-gray-600">Draft - Not yet submitted</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CurrencyDollarIcon className="w-4 h-4 text-orange-700" />
+                    <span className="text-gray-600">Payment Pending</span>
+                  </li>
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

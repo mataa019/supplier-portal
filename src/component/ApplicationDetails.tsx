@@ -9,6 +9,7 @@ interface ApplicationDetailsProps {
   onClose?: () => void;
   onWithdraw?: () => void;
   withdrawing?: boolean;
+  onDelete?: () => void;
 }
 
 const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
@@ -67,6 +68,15 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
             className={`mt-2 mb-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 ${withdrawing ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
+          </button>
+        )}
+        {/* Delete Button (show for withdrawn status) */}
+        {application.status === 'withdrawn' && onDelete && (
+          <button
+            onClick={onDelete}
+            className="mt-2 mb-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gray-800 text-white rounded-lg hover:bg-gray-900"
+          >
+            Delete Application
           </button>
         )}
         {/* Documents */}

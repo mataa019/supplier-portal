@@ -1,6 +1,4 @@
 
-
-
 type AppEnv = ImportMetaEnv & {
 	VITE_API_BASE_URL?: string
 }
@@ -406,6 +404,19 @@ export async function fetchMyApplications(): Promise<ApplicationResponse[]> {
   const data = await response.json();
   console.log('fetch MyApplications success:', data);
   return data;
+}
+// Delete Application
+export async function deleteApplication(applicationId: string): Promise<void> {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}`), {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to delete application');
+  }
+  // No content expected on success
+  console.log('deleteApplication success');
 }
 
 
