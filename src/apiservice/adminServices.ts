@@ -15,13 +15,14 @@ const getAuthHeaders = (): Record<string, string> => {
 };
 
 export interface CreateCategoryPayload {
-	name: string;
-	description: string;
-	applicationFee: number;
-	requirements: string;
-	status: string;
-	documentTemplate?: File | null;
+    name: string;
+    description: string;
+    applicationFee: number;
+    requirements: string;
+    status: string;
+    documentTemplate?: File | {} | null;
 }
+
 
 // Create a supplier category (admin)
 export const createAdminSupplierCategory = async (payload: CreateCategoryPayload): Promise<any> => {
@@ -31,9 +32,9 @@ export const createAdminSupplierCategory = async (payload: CreateCategoryPayload
 	formData.append('applicationFee', String(payload.applicationFee));
 	formData.append('requirements', payload.requirements);
 	formData.append('status', payload.status);
-	if (payload.documentTemplate) {
-		formData.append('documentTemplate', payload.documentTemplate);
-	}
+	if (payload.documentTemplate && payload.documentTemplate instanceof File) {
+        formData.append('documentTemplate', payload.documentTemplate);
+    }
 
 	const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories`, {
 		method: 'POST',
