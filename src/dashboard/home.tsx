@@ -10,8 +10,8 @@ import {
 
 const stats = [
   { title: 'Total Applications', value: 3, icon: DocumentTextIcon },
-  { title: 'Pending Review', value: 1, icon: ClockIcon },
-  { title: 'Approved', value: 1, icon: CheckCircleIcon },
+  { title: 'Payment Pending ', value: 1, icon: ClockIcon },
+  { title: 'Draft Applications', value: 1, icon: CheckCircleIcon },
   { title: 'Categories Applied', value: 2, icon: FolderIcon },
 ];
 
