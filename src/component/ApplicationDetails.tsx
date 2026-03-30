@@ -6,9 +6,9 @@ import type { ApplicationDocument, ApplicationResponse } from '../apiservice/Api
 interface ApplicationDetailsProps {
   application: ApplicationResponse;
   documents: ApplicationDocument[];
-  onClose?: () => void;
-  onWithdraw?: () => void;
-  withdrawing?: boolean;
+  onClose: () => void;
+  onWithdraw: () => void;
+  withdrawing: boolean;
   onDelete?: () => void;
 }
 
@@ -17,7 +17,8 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
   documents,
   onClose,
   onWithdraw,
-  withdrawing = false,
+  withdrawing,
+  onDelete,
 }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -33,10 +34,6 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
         )}
       </div>
       <div className="space-y-4 text-sm">
-        <div>
-          <p className="text-xs text-gray-400 mb-1">Reference</p>
-          <p className="font-medium text-gray-900">{application.id}</p>
-        </div>
         <div>
           <p className="text-xs text-gray-400 mb-1">Category</p>
           <div className="flex items-center gap-2">
