@@ -313,7 +313,7 @@ const statusIcons = {
                     onClose={() => setSelectedApp(null)}
                     onWithdraw={handleWithdraw}
                     withdrawing={withdrawing}
-                    onDelete={selectedApp.status === 'withdrawn' ? handleDelete : undefined}
+                    onDelete={['withdrawn', 'draft'].includes(selectedApp.status) ? handleDelete : undefined}
                   />
                 )}
                 {/* Withdraw Modal */}

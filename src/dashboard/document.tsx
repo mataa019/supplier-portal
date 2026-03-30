@@ -143,10 +143,12 @@ export default function Documents() {
               setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
             }
           });
+          setUploading(false); // Ensure loading overlay is dismissed
           setShowSubmit(true);
           setCreatedAppId(app.id);
         } else {
           alert('No documents to upload.');
+          setUploading(false); // Also dismiss loading if nothing to upload
         }
       }
     } catch (err: any) {

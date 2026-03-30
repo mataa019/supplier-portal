@@ -67,8 +67,8 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
             {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
           </button>
         )}
-        {/* Delete Button (show for withdrawn status) */}
-        {application.status === 'withdrawn' && onDelete && (
+        {/* Delete Button (show for withdrawn or draft status) */}
+        {(application.status === 'withdrawn' || application.status === 'draft') && onDelete && (
           <button
             onClick={onDelete}
             className="mt-2 mb-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gray-800 text-white rounded-lg hover:bg-gray-900"
