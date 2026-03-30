@@ -241,6 +241,7 @@ export interface ApplicationDocument {
   fileName: string;
   filePath: string;
   uploadedAt: string;
+  url?: string;
 }
 
 export interface ApplicationPayment {

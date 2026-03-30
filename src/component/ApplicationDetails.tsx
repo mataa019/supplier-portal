@@ -85,6 +85,16 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
                 <li key={doc.id} className="text-gray-700 flex items-center gap-2">
                   <CheckCircleSolid className="w-4 h-4 text-green-600" />
                   {doc.fileName} <span className="text-xs text-gray-400">({doc.type})</span>
+                  {doc.url && (
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-600 underline text-xs hover:text-blue-800"
+                    >
+                      View
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
