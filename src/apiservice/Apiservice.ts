@@ -289,15 +289,14 @@ export async function updateApplication(
   categoryId: string,
   documents: string[]
 ) {
-  const response = await fetch(`/applications/${applicationId}`, {
+  const response = await fetch(createApiUrl(`/applications/${applicationId}`), {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ categoryId, documents }),
   });
   if (!response.ok) {
-    throw new Error('Failed to update application');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to update application');
   }
   const data = await response.json();
   console.log('update Application success:', data);
