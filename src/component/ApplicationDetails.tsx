@@ -72,17 +72,17 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
         {/* Documents */}
         <div>
           <p className="text-xs text-gray-400 mb-1">Documents</p>
-          {documents.length === 0 ? (
-            <span className="text-xs text-gray-500">No documents found</span>
-          ) : (
+          {((application.documents && application.documents.length > 0) || (documents && documents.length > 0)) ? (
             <ul className="list-disc ml-5">
-              {documents.map((doc) => (
+              {(application.documents && application.documents.length > 0 ? application.documents : documents).map((doc) => (
                 <li key={doc.id} className="text-gray-700 flex items-center gap-2">
                   <CheckCircleSolid className="w-4 h-4 text-green-600" />
                   {doc.fileName} <span className="text-xs text-gray-400">({doc.type})</span>
                 </li>
               ))}
             </ul>
+          ) : (
+            <span className="text-xs text-gray-500">No documents found</span>
           )}
         </div>
       </div>
