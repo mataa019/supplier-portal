@@ -15,7 +15,7 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import LoadingOverlay from '../component/LoadingOverlay';
-import { createApplication, uploadApplicationDocument, submitApplication, fetchSupplierCategories, fetchSupplierCategoryById, type SupplierCategory, type ApplicationResponse } from '../apiservice/Apiservice';
+import { createApplication, uploadApplicationDocument, submitApplication, fetchSupplierCategories, fetchSupplierCategoryById, type SupplierCategory, type ApplicationResponse, updateApplication } from '../apiservice/Apiservice';
 import Select from '../component/Select';
 
 interface UploadedFile {
@@ -96,6 +96,7 @@ export default function Documents() {
 
   // Create application and upload documents, then enable submit
   const [uploading, setUploading] = useState(false);
+  const applicationId = searchParams.get('applicationId');
   const handleProceed = async () => {
     if (!categoryId) {
       alert('No category selected. Please select a category and try again.');
@@ -103,36 +104,50 @@ export default function Documents() {
     }
     setUploading(true);
     try {
-      const app = await createApplication({ categoryId });
-      const files: File[] = [];
-      const documentsMeta: { type: string; description: string }[] = [];
-      for (const doc of documentTypes) {
-        const uploaded = uploadedFiles[doc.id];
-        if (uploaded) {
-          files.push(uploaded.file);
-          documentsMeta.push({ type: doc.id, description: doc.label });
-          setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
+      // Collect document IDs (adjust as needed for your structure)
+      const documentIds = Object.values(uploadedFiles)
+        .filter((file: any) => file && file.id)
+        .map((file: any) => file.id);
+
+      if (applicationId) {
+        // Update and submit existing draft application
+        await updateApplication(applicationId, categoryId, documentIds);
+        await submitApplication(applicationId, { declarationAccepted: true });
+        alert('Application updated and submitted!');
+        navigate('/dashboard/applications');
+      } else {
+        // Existing create logic
+        const app = await createApplication({ categoryId });
+        const files: File[] = [];
+        const documentsMeta: { type: string; description: string }[] = [];
+        for (const doc of documentTypes) {
+          const uploaded = uploadedFiles[doc.id];
+          if (uploaded) {
+            files.push(uploaded.file);
+            documentsMeta.push({ type: doc.id, description: doc.label });
+            setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
+          }
+        }
+        if (files.length > 0) {
+          await uploadApplicationDocument({
+            applicationId: app.id,
+            file: files[0],
+            type: documentsMeta[0].type,
+            description: documentsMeta[0].description,
+          });
+          documentTypes.forEach((doc) => {
+            if (uploadedFiles[doc.id]) {
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
+            }
+          });
+          setShowSubmit(true);
+          setCreatedAppId(app.id);
+        } else {
+          alert('No documents to upload.');
         }
       }
-      if (files.length > 0) {
-        await uploadApplicationDocument({
-          applicationId: app.id,
-          file: files[0],
-          type: documentsMeta[0].type,
-          description: documentsMeta[0].description,
-        });
-        documentTypes.forEach((doc) => {
-          if (uploadedFiles[doc.id]) {
-            setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
-          }
-        });
-        setShowSubmit(true);
-        setCreatedAppId(app.id);
-      } else {
-        alert('No documents to upload.');
-      }
     } catch (err: any) {
-      alert(err.message || 'Failed to create application or upload documents');
+      alert(err.message || 'Failed to create/update application or upload documents');
     } finally {
       setUploading(false);
     }
