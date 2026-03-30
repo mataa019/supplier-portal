@@ -10,27 +10,12 @@ import {
   fetchApplicationDocuments,
   deleteApplication,
 } from '../apiservice/Apiservice';
-  // Delete handler
-  const handleDelete = async () => {
-    if (!selectedApp) return;
-    if (!window.confirm('Are you sure you want to permanently delete this application?')) return;
-    try {
-      await deleteApplication(selectedApp.id);
-      alert('Application deleted successfully.');
-      setSelectedApp(null);
-      // Refresh applications list
-      const data = await fetchMyApplications();
-      setApplications(data);
-    } catch (e: any) {
-      alert(e.message || 'Failed to delete application');
-    }
-  };
+
 
 import {
   FunnelIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  XMarkIcon,
   LightBulbIcon,
   ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
@@ -115,6 +100,21 @@ const statusIcons = {
       alert(e.message || 'Failed to withdraw application');
     } finally {
       setWithdrawing(false);
+    }
+  };
+    // Delete handler
+  const handleDelete = async () => {
+    if (!selectedApp) return;
+    if (!window.confirm('Are you sure you want to permanently delete this application?')) return;
+    try {
+      await deleteApplication(selectedApp.id);
+      alert('Application deleted successfully.');
+      setSelectedApp(null);
+      // Refresh applications list
+      const data = await fetchMyApplications();
+      setApplications(data);
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete application');
     }
   };
 
