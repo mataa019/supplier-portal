@@ -1,5 +1,12 @@
-import { useState, useRef } from 'react';
-import { createAdminSupplierCategory } from '../apiservice/adminServices';
+import { useState, useRef, useEffect } from 'react';
+import {
+  createAdminSupplierCategory,
+  listAdminSupplierCategories,
+  updateAdminSupplierCategory,
+  deleteAdminSupplierCategory,
+  uploadCategoryTemplateDocument,
+  getAdminSupplierCategory,
+} from '../apiservice/adminServices';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -21,76 +28,34 @@ interface Category {
   createdAt: string;
 }
 
-const mockCategories: Category[] = [
-  {
-    id: 'CAT-001',
-    name: 'Construction Materials',
-    description: 'Building materials, cement, steel, bricks, roofing materials, etc.',
-    applicationFee: 'K2,500',
-    documentTemplate: 'construction_application.pdf',
-    suppliersCount: 45,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 'CAT-002',
-    name: 'IT Equipment & Services',
-    description: 'Computers, software, networking equipment, IT support services',
-    applicationFee: 'K3,000',
-    documentTemplate: 'it_services_application.pdf',
-    suppliersCount: 32,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 'CAT-003',
-    name: 'Cleaning Services',
-    description: 'Office cleaning, industrial cleaning, janitorial supplies',
-    applicationFee: 'K1,000',
-    documentTemplate: 'cleaning_application.pdf',
-    suppliersCount: 28,
-    status: 'active',
-    createdAt: '2024-02-01',
-  },
-  {
-    id: 'CAT-004',
-    name: 'Catering Services',
-    description: 'Food catering, event catering, cafeteria services',
-    applicationFee: 'K1,500',
-    documentTemplate: 'catering_application.pdf',
-    suppliersCount: 19,
-    status: 'active',
-    createdAt: '2024-02-15',
-  },
-  {
-    id: 'CAT-005',
-    name: 'Office Supplies',
-    description: 'Stationery, office furniture, printing supplies',
-    applicationFee: 'K1,500',
-    documentTemplate: 'office_supplies_application.pdf',
-    suppliersCount: 24,
-    status: 'active',
-    createdAt: '2024-03-01',
-  },
-  {
-    id: 'CAT-006',
-    name: 'Security Services',
-    description: 'Guard services, surveillance systems, access control',
-    applicationFee: 'K2,000',
-    documentTemplate: 'security_application.pdf',
-    suppliersCount: 15,
-    status: 'inactive',
-    createdAt: '2024-03-15',
-  },
-];
+// Remove mockCategories, categories will be fetched from API
 
 const statusColors = {
   active: 'bg-green-100 text-green-700',
   inactive: 'bg-gray-100 text-gray-600',
 };
 
-export default function Categories() {
-  const [categories, setCategories] = useState(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+    // Fetch categories on mount
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const data = await listAdminSupplierCategories();
+          setCategories(
+            data.map((cat: any) => ({
+              ...cat,
+              applicationFee: `K${cat.applicationFee}`,
+              suppliersCount: cat.suppliersCount || 0,
+              documentTemplate: cat.documentTemplate || '',
+              createdAt: cat.createdAt ? cat.createdAt.split('T')[0] : '',
+            }))
+          );
+        } catch (err: any) {
+          alert(err.message || 'Failed to fetch categories');
+        }
+      };
+      fetchCategories();
+    }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -124,80 +89,106 @@ export default function Categories() {
     setShowModal(true);
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setFormData({
-      name: category.name,
-      description: category.description,
-      applicationFee: category.applicationFee.replace('K', ''),
-      documentTemplate: category.documentTemplate,
-      status: category.status,
-    });
-    setShowModal(true);
+  const handleEdit = async (category: Category) => {
+    try {
+      // Fetch latest category data from API
+      const cat = await getAdminSupplierCategory(category.id);
+      setEditingCategory(cat);
+      setFormData({
+        name: cat.name,
+        description: cat.description,
+        applicationFee: String(cat.applicationFee),
+        documentTemplate: cat.documentTemplate || '',
+        status: cat.status,
+      });
+      setFile(null);
+      setShowModal(true);
+    } catch (err: any) {
+      alert(err.message || 'Failed to fetch category');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const category = categories.find((c) => c.id === id);
     if (category && category.suppliersCount > 0) {
       alert('Cannot delete category with active suppliers. Please reassign suppliers first.');
       return;
     }
     if (confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter((c) => c.id !== id));
+      try {
+        await deleteAdminSupplierCategory(id);
+        setCategories(categories.filter((c) => c.id !== id));
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete category');
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingCategory) {
-      // Update existing (local only)
-      setCategories(
-        categories.map((c) =>
-          c.id === editingCategory.id
-            ? {
-                ...c,
-                name: formData.name,
-                description: formData.description,
-                applicationFee: `K${formData.applicationFee}`,
-                documentTemplate: formData.documentTemplate,
-                status: formData.status,
-              }
-            : c
-        )
-      );
-      setShowModal(false);
-      return;
-    }
     setUploading(true);
     try {
+      if (editingCategory) {
+        // Update category
+        const payload = {
+          name: formData.name,
+          description: formData.description,
+          applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
+          requirements: '',
+          status: formData.status,
+          documentTemplate: file || {},
+        };
+        const updated = await updateAdminSupplierCategory(editingCategory.id, payload);
+        // If file uploaded, upload separately
+        if (file) {
+          await uploadCategoryTemplateDocument(editingCategory.id, file);
+        }
+        // Refresh categories
+        const data = await listAdminSupplierCategories();
+        setCategories(
+          data.map((cat: any) => ({
+            ...cat,
+            applicationFee: `K${cat.applicationFee}`,
+            suppliersCount: cat.suppliersCount || 0,
+            documentTemplate: cat.documentTemplate || '',
+            createdAt: cat.createdAt ? cat.createdAt.split('T')[0] : '',
+          }))
+        );
+        setShowModal(false);
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      // Create new category
       const payload = {
         name: formData.name,
         description: formData.description,
         applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
-        requirements: '', // You may want to add a requirements field to the form
+        requirements: '',
         status: formData.status,
-        documentTemplate: file,
+        documentTemplate: file || {},
       };
       const created = await createAdminSupplierCategory(payload);
-      // Optionally, fetch categories from API instead of adding locally
-      setCategories([
-        ...categories,
-        {
-          id: created.id || `CAT-${String(categories.length + 1).padStart(3, '0')}`,
-          name: created.name || formData.name,
-          description: created.description || formData.description,
-          applicationFee: `K${created.applicationFee || formData.applicationFee}`,
-          documentTemplate: created.documentTemplate || (file ? file.name : ''),
-          suppliersCount: 0,
-          status: created.status || formData.status,
-          createdAt: created.createdAt || new Date().toISOString().split('T')[0],
-        },
-      ]);
+      // If file uploaded, upload separately
+      if (file && created.id) {
+        await uploadCategoryTemplateDocument(created.id, file);
+      }
+      // Refresh categories
+      const data = await listAdminSupplierCategories();
+      setCategories(
+        data.map((cat: any) => ({
+          ...cat,
+          applicationFee: `K${cat.applicationFee}`,
+          suppliersCount: cat.suppliersCount || 0,
+          documentTemplate: cat.documentTemplate || '',
+          createdAt: cat.createdAt ? cat.createdAt.split('T')[0] : '',
+        }))
+      );
       setShowModal(false);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: any) {
-      alert(err.message || 'Failed to create category');
+      alert(err.message || 'Failed to save category');
     } finally {
       setUploading(false);
     }
@@ -303,10 +294,19 @@ export default function Categories() {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Template</span>
-                <button className="flex items-center gap-1 text-red-600 hover:text-red-700">
-                  <DocumentArrowDownIcon className="w-4 h-4" />
-                  <span className="text-xs">Download</span>
-                </button>
+                {category.documentTemplate ? (
+                  <a
+                    href={category.documentTemplate}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                  >
+                    <DocumentArrowDownIcon className="w-4 h-4" />
+                    <span className="text-xs">Download</span>
+                  </a>
+                ) : (
+                  <span className="text-xs text-gray-400">No file</span>
+                )}
               </div>
             </div>
           </div>

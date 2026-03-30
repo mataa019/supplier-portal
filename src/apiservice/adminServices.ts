@@ -121,3 +121,15 @@ export const uploadCategoryTemplateDocument = async (
     throw new Error(errorData.message || 'Failed to upload template document');
   }
 };
+// Get a single supplier category (admin)
+export const getAdminSupplierCategory = async (categoryId: string): Promise<AdminCategory> => {
+    const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories/${categoryId}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch category');
+    }
+    return response.json();
+};
