@@ -31,6 +31,7 @@ const documentTypes = [
   { id: 'references', label: 'Current trade referencess', required: false },
 ];
 
+export default function Documents() {
   const [categories, setCategories] = useState<SupplierCategory[]>([]);
   const [categoryId, setCategoryId] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');

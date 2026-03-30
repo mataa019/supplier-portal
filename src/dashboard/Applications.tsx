@@ -103,13 +103,19 @@ const statusIcons = {
     if (!selectedApp) return;
     const newCategoryId = window.prompt('Enter new Category ID:', selectedApp.category?.id || '');
     if (!newCategoryId || newCategoryId === selectedApp.category?.id) return;
+
+    // Prompt for document IDs (comma-separated)
+    const docIdsInput = window.prompt('Enter document IDs (comma separated):', (documents || []).map(doc => doc.id).join(','));
+    if (docIdsInput === null) return; // Cancelled
+    const docIds = docIdsInput.split(',').map(id => id.trim()).filter(Boolean);
+
     setUpdatingCategory(true);
     try {
-      const updated = await updateApplication(selectedApp.id, newCategoryId);
+      const updated = await updateApplication(selectedApp.id, newCategoryId, docIds);
       setSelectedApp(updated);
-      alert('Category updated successfully.');
+      alert('Application updated successfully.');
     } catch (e: any) {
-      alert(e.message || 'Failed to update category');
+      alert(e.message || 'Failed to update application');
     } finally {
       setUpdatingCategory(false);
     }
@@ -221,6 +227,17 @@ const statusIcons = {
                       >
                         View Details
                       </button>
+                      {app.status === 'draft' && (
+                        <button
+                          onClick={() => {
+                            // Redirect to document upload page for editing draft
+                            window.location.href = `/dashboard/document?applicationId=${app.id}&category=${app.category?.id || ''}`;
+                          }}
+                          className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      )}
                       {app.status === 'submitted' && (
                         <button
                           onClick={() => alert('Payment flow coming soon!')}
