@@ -92,6 +92,7 @@ export const updateAdminSupplierCategory = async (
 	}
 	return response.json();
 };
+
 // Delete a supplier category (admin)
 export const deleteAdminSupplierCategory = async (categoryId: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories/${categoryId}`, {
@@ -102,4 +103,21 @@ export const deleteAdminSupplierCategory = async (categoryId: string): Promise<v
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to delete supplier category');
     }
+};
+// Upload category template document (admin)
+export const uploadCategoryTemplateDocument = async (
+  categoryId: string,
+  file: File
+): Promise<void> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories/${categoryId}/template`, {
+    method: 'POST',
+    headers: getAuthHeaders(), 
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to upload template document');
+  }
 };
