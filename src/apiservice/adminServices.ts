@@ -1,4 +1,29 @@
 
+// Update a supplier category (admin) using application/json
+export const updateAdminSupplierCategory = async (
+	categoryId: string,
+	payload: Partial<CreateCategoryPayload>
+): Promise<any> => {
+	// If documentTemplate is a File, convert to empty object (API expects {})
+	let bodyPayload = { ...payload };
+	if (bodyPayload.documentTemplate && bodyPayload.documentTemplate instanceof File) {
+		bodyPayload.documentTemplate = {};
+	}
+	const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories/${categoryId}`, {
+		method: 'PATCH',
+		headers: {
+			...getAuthHeaders(),
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(bodyPayload),
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.message || 'Failed to update supplier category');
+	}
+	return response.json();
+};
+
 type AppEnv = ImportMetaEnv & {
 	VITE_API_BASE_URL?: string
 }
