@@ -34,7 +34,7 @@ export default function DashboardHome() {
 
         // Calculate stats
         const totalApplications = applications.length;
-        const paymentPending = applications.filter(app => app.status === 'payment_pending').length;
+        const paymentPending = applications.filter(app => app.status === 'submitted').length;
         const draftApplications = applications.filter(app => app.status === 'draft').length;
         // Unique categories applied for
         const uniqueCategoryIds = new Set(applications.map(app => app.categoryId));

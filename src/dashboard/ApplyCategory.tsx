@@ -209,23 +209,6 @@ export default function Application() {
             </ul>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Need Help?</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Contact our support team for assistance with your application.
-            </p>
-            <div className="text-sm space-y-3">
-              <p className="flex items-center gap-3 text-gray-600">
-                <EnvelopeIcon className="w-4 h-4 text-gray-400" />
-                suppliers@minetzambia.com
-              </p>
-              <p className="flex items-center gap-3 text-gray-600">
-                <PhoneIcon className="w-4 h-4 text-gray-400" />
-                +260 XXX XXXXXX
-              </p>
-            </div>
-          </div>
-
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-start gap-3">
               <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
