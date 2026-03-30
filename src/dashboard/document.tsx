@@ -110,11 +110,14 @@ export default function Documents() {
         .map((file: any) => file.id);
 
       if (applicationId) {
-        // Update and submit existing draft application
+        // Show loading overlay while updating
         await updateApplication(applicationId, categoryId, documentIds);
         await submitApplication(applicationId, { declarationAccepted: true });
+        // Hide loading, then show success message
+        setUploading(false);
         alert('Application updated and submitted!');
         navigate('/dashboard/applications');
+        return;
       } else {
         // Existing create logic
         const app = await createApplication({ categoryId });
@@ -147,9 +150,8 @@ export default function Documents() {
         }
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to create/update application or upload documents');
-    } finally {
       setUploading(false);
+      alert(err.message || 'Failed to create/update application or upload documents');
     }
   };
 
@@ -192,6 +194,7 @@ export default function Documents() {
       )}
       {/* Header */}
       {isSaving && <LoadingOverlay message="Saving Draft..." />}
+      {uploading && <LoadingOverlay message={applicationId ? "Updating application..." : "Uploading documents..."} />}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Upload Documents</h1>
         <p className="text-sm text-gray-500 mt-1">Upload all required documents to proceed with your application</p>

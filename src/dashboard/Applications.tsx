@@ -230,9 +230,8 @@ const statusIcons = {
                       {app.status === 'draft' && (
                         <button
                           onClick={() => {
-                              // Redirect to document upload page for editing draft
-                              window.location.href = `/dashboard/documents?applicationId=${app.id}&category=${app.category?.id || ''}`;
-                            }}
+                            window.location.href = `/dashboard/documents?applicationId=${app.id}&category=${app.category?.id || ''}`;
+                          }}
                           className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           Edit
