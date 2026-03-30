@@ -303,16 +303,14 @@ export async function updateApplication(
 // Upload document to application
 export interface UploadApplicationDocumentParams {
   applicationId: string;
-  file: File;
-  type: string;
-  description?: string;
+  files: File[];
+  documents: { type: string; description?: string }[];
 }
 
-export const uploadApplicationDocument = async ({ applicationId, file, type, description }: UploadApplicationDocumentParams): Promise<void> => {
+export const uploadApplicationDocument = async ({ applicationId, files, documents }: UploadApplicationDocumentParams): Promise<void> => {
   const formData = new FormData();
-  formData.append('files', file);
-  const documentsMeta = [{ type, description }];
-  formData.append('documents', JSON.stringify(documentsMeta));
+  files.forEach(file => formData.append('files', file));
+  formData.append('documents', JSON.stringify(documents));
 
   const response = await fetch(createApiUrl(`/applications/${applicationId}/documents`), {
     method: 'POST',

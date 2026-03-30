@@ -117,34 +117,40 @@ export default function Documents() {
         return;
       } else {
         const app = await createApplication({ categoryId });
-        let uploadedAny = false;
-        for (const doc of documentTypes) {
+        const files: File[] = [];
+        const documents: { type: string; description: string }[] = [];
+        documentTypes.forEach(doc => {
           const uploaded = uploadedFiles[doc.id];
           if (uploaded) {
+            files.push(uploaded.file);
+            documents.push({ type: doc.id, description: doc.label });
             setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
-            try {
-              await uploadApplicationDocument({
-                applicationId: app.id,
-                file: uploaded.file,
-                type: doc.id,
-                description: doc.label,
-              });
-              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
-              uploadedAny = true;
-            } catch (err) {
-              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
-            }
           }
-        }
-        if (uploadedAny) {
-          setTimeout(() => {
-            setUploading(false); // Ensure loading overlay is dismissed after 2.5s
-            setShowSubmit(true);
-            setCreatedAppId(app.id);
-          }, 2500);
+        });
+        if (files.length > 0) {
+          try {
+            await uploadApplicationDocument({ applicationId: app.id, files, documents });
+            documentTypes.forEach(doc => {
+              if (uploadedFiles[doc.id]) {
+                setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
+              }
+            });
+            setTimeout(() => {
+              setUploading(false);
+              setShowSubmit(true);
+              setCreatedAppId(app.id);
+            }, 2500);
+          } catch (err) {
+            documentTypes.forEach(doc => {
+              if (uploadedFiles[doc.id]) {
+                setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
+              }
+            });
+            setTimeout(() => setUploading(false), 2500);
+          }
         } else {
           alert('No documents to upload.');
-          setTimeout(() => setUploading(false), 2500); // Also dismiss loading after 2.5s if nothing to upload
+          setTimeout(() => setUploading(false), 2500);
         }
       }
     } catch (err: any) {
