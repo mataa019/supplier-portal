@@ -47,3 +47,26 @@ export const createAdminSupplierCategory = async (payload: CreateCategoryPayload
 	}
 	return response.json();
 };
+
+export interface AdminCategory {
+	id: string;
+	name: string;
+	description: string;
+	applicationFee: number;
+	status: string;
+	documentTemplate: string;
+	createdAt: string;
+}
+
+// List all supplier categories (admin)
+export const listAdminSupplierCategories = async (): Promise<AdminCategory[]> => {
+	const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories`, {
+		method: 'GET',
+		headers: getAuthHeaders(),
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.message || 'Failed to fetch categories');
+	}
+	return response.json();
+};

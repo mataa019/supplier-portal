@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createAdminSupplierCategory } from '../apiservice/adminServices';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -93,13 +94,17 @@ export default function Categories() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     applicationFee: '',
-    documentTemplate: '',
+    documentTemplate: '', // keep for display, but file is handled separately
     status: 'active' as 'active' | 'inactive',
   });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const filteredCategories = categories.filter(
     (cat) =>
@@ -142,10 +147,10 @@ export default function Categories() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingCategory) {
-      // Update existing
+      // Update existing (local only)
       setCategories(
         categories.map((c) =>
           c.id === editingCategory.id
@@ -160,21 +165,42 @@ export default function Categories() {
             : c
         )
       );
-    } else {
-      // Add new
-      const newCategory: Category = {
-        id: `CAT-${String(categories.length + 1).padStart(3, '0')}`,
+      setShowModal(false);
+      return;
+    }
+    setUploading(true);
+    try {
+      const payload = {
         name: formData.name,
         description: formData.description,
-        applicationFee: `K${formData.applicationFee}`,
-        documentTemplate: formData.documentTemplate,
-        suppliersCount: 0,
+        applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
+        requirements: '', // You may want to add a requirements field to the form
         status: formData.status,
-        createdAt: new Date().toISOString().split('T')[0],
+        documentTemplate: file,
       };
-      setCategories([...categories, newCategory]);
+      const created = await createAdminSupplierCategory(payload);
+      // Optionally, fetch categories from API instead of adding locally
+      setCategories([
+        ...categories,
+        {
+          id: created.id || `CAT-${String(categories.length + 1).padStart(3, '0')}`,
+          name: created.name || formData.name,
+          description: created.description || formData.description,
+          applicationFee: `K${created.applicationFee || formData.applicationFee}`,
+          documentTemplate: created.documentTemplate || (file ? file.name : ''),
+          suppliersCount: 0,
+          status: created.status || formData.status,
+          createdAt: created.createdAt || new Date().toISOString().split('T')[0],
+        },
+      ]);
+      setShowModal(false);
+      setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err: any) {
+      alert(err.message || 'Failed to create category');
+    } finally {
+      setUploading(false);
     }
-    setShowModal(false);
   };
 
   const totalSuppliers = categories.reduce((acc, c) => acc + c.suppliersCount, 0);
@@ -343,6 +369,12 @@ export default function Categories() {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  ref={fileInputRef}
+                  onChange={e => {
+                    const f = e.target.files && e.target.files[0];
+                    setFile(f || null);
+                    setFormData({ ...formData, documentTemplate: f ? f.name : '' });
+                  }}
                 />
                 {editingCategory && (
                   <p className="text-xs text-gray-500 mt-1">
@@ -371,9 +403,10 @@ export default function Categories() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60"
+                  disabled={uploading}
                 >
-                  {editingCategory ? 'Save Changes' : 'Add Category'}
+                  {uploading ? 'Saving...' : editingCategory ? 'Save Changes' : 'Add Category'}
                 </button>
               </div>
             </form>
