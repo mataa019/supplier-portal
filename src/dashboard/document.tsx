@@ -38,22 +38,18 @@ export default function Documents() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile | null>>({});
-  // Track upload status for each document
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'uploading' | 'success' | 'error'>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  // On mount, fetch all categories
   useEffect(() => {
     fetchSupplierCategories().then(setCategories).catch(() => setCategories([]));
   }, []);
 
-  // If category is in URL, set as initial value
   useEffect(() => {
     const urlCategory = searchParams.get('category');
     if (urlCategory) setCategoryId(urlCategory);
   }, [searchParams]);
 
-  // Fetch category name from backend when categoryId changes
   useEffect(() => {
     if (categoryId) {
       fetchSupplierCategoryById(categoryId)
@@ -108,7 +104,6 @@ export default function Documents() {
     setUploading(true);
     try {
       const app = await createApplication({ categoryId });
-      // ...existing code...
       const files: File[] = [];
       const documentsMeta: { type: string; description: string }[] = [];
       for (const doc of documentTypes) {
