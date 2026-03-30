@@ -104,51 +104,47 @@ export default function Documents() {
     }
     setUploading(true);
     try {
-      // Collect document IDs (adjust as needed for your structure)
       const documentIds = Object.values(uploadedFiles)
         .filter((file: any) => file && file.id)
         .map((file: any) => file.id);
 
       if (applicationId) {
-        // Show loading overlay while updating
         await updateApplication(applicationId, categoryId, documentIds);
         await submitApplication(applicationId, { declarationAccepted: true });
-        // Hide loading, then show success message
         setUploading(false);
         alert('Application updated and submitted!');
         navigate('/dashboard/applications');
         return;
       } else {
-        // Existing create logic
         const app = await createApplication({ categoryId });
-        const files: File[] = [];
-        const documentsMeta: { type: string; description: string }[] = [];
+        let uploadedAny = false;
         for (const doc of documentTypes) {
           const uploaded = uploadedFiles[doc.id];
           if (uploaded) {
-            files.push(uploaded.file);
-            documentsMeta.push({ type: doc.id, description: doc.label });
             setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
+            try {
+              await uploadApplicationDocument({
+                applicationId: app.id,
+                file: uploaded.file,
+                type: doc.id,
+                description: doc.label,
+              });
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
+              uploadedAny = true;
+            } catch (err) {
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
+            }
           }
         }
-        if (files.length > 0) {
-          await uploadApplicationDocument({
-            applicationId: app.id,
-            file: files[0],
-            type: documentsMeta[0].type,
-            description: documentsMeta[0].description,
-          });
-          documentTypes.forEach((doc) => {
-            if (uploadedFiles[doc.id]) {
-              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
-            }
-          });
-          setUploading(false); // Ensure loading overlay is dismissed
-          setShowSubmit(true);
-          setCreatedAppId(app.id);
+        if (uploadedAny) {
+          setTimeout(() => {
+            setUploading(false); // Ensure loading overlay is dismissed after 2.5s
+            setShowSubmit(true);
+            setCreatedAppId(app.id);
+          }, 2500);
         } else {
           alert('No documents to upload.');
-          setUploading(false); // Also dismiss loading if nothing to upload
+          setTimeout(() => setUploading(false), 2500); // Also dismiss loading after 2.5s if nothing to upload
         }
       }
     } catch (err: any) {
