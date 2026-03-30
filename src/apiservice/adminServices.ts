@@ -68,12 +68,12 @@ export const listAdminSupplierCategories = async (): Promise<AdminCategory[]> =>
 	return response.json();
 };
 
-// Update a supplier category (admin) using application/json
+
+// Update a supplier category (admin)
 export const updateAdminSupplierCategory = async (
 	categoryId: string,
 	payload: Partial<CreateCategoryPayload>
 ): Promise<any> => {
-	// If documentTemplate is a File, convert to empty object (API expects {})
 	let bodyPayload = { ...payload };
 	if (bodyPayload.documentTemplate && bodyPayload.documentTemplate instanceof File) {
 		bodyPayload.documentTemplate = {};
@@ -91,4 +91,15 @@ export const updateAdminSupplierCategory = async (
 		throw new Error(errorData.message || 'Failed to update supplier category');
 	}
 	return response.json();
+};
+// Delete a supplier category (admin)
+export const deleteAdminSupplierCategory = async (categoryId: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete supplier category');
+    }
 };
