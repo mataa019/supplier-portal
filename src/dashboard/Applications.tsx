@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
+import ApplicationDetails from '../component/ApplicationDetails';
 
 export default function Applications() {
   const [updatingCategory, setUpdatingCategory] = useState(false);
@@ -264,83 +265,19 @@ const statusIcons = {
         {/* Detail Panel / Timeline */}
         <div className="space-y-6">
           {selectedApp ? (
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-semibold text-gray-900">Application Details</h3>
-                <button
-                  onClick={() => setSelectedApp(null)}
-                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                >
-                  <XMarkIcon className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Reference</p>
-                  <p className="font-medium text-gray-900">{selectedApp.id}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Category</p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">{selectedApp.category?.name || '—'}</span>
-                    <button
-                      onClick={handleUpdateCategory}
-                      disabled={updatingCategory}
-                      className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
-                    >
-                      {updatingCategory ? 'Updating...' : 'Change'}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Fee</p>
-                  <p className="font-medium text-gray-900">K{selectedApp.category?.applicationFee ?? '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Status</p>
-                  <p className="font-medium text-gray-900">{selectedApp.status.charAt(0).toUpperCase() + selectedApp.status.slice(1).replace('_', ' ')}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Submitted At</p>
-                  <p className="font-medium text-gray-900">{selectedApp.submittedAt ? new Date(selectedApp.submittedAt).toLocaleString() : '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Created At</p>
-                  <p className="font-medium text-gray-900">{selectedApp.createdAt ? new Date(selectedApp.createdAt).toLocaleString() : '—'}</p>
-                </div>
-                {/* Withdraw Button (show for eligible statuses) */}
-                {['submitted', 'pending', 'payment_pending'].includes(selectedApp.status) && (
-                  <button
-                    onClick={handleWithdraw}
-                    disabled={withdrawing}
-                    className={`mt-2 mb-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 ${withdrawing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {withdrawing ? 'Withdrawing...' : 'Withdraw Application'}
-                  </button>
-                )}
-                {/* Documents */}
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Documents</p>
-                  {loadingDocs ? (
-                    <span className="text-xs text-blue-600">Loading documents...</span>
-                  ) : docsError ? (
-                    <span className="text-xs text-red-600">{docsError}</span>
-                  ) : (
-                    <ul className="list-disc ml-5">
-                      {documents.length === 0 ? (
-                        <li className="text-gray-500">No documents found</li>
-                      ) : (
-                        documents.map((doc) => (
-                          <li key={doc.id} className="text-gray-700">
-                            {doc.fileName} <span className="text-xs text-gray-400">({doc.type})</span>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            </div>
+            loadingDocs ? (
+              <div className="bg-white border border-gray-200 rounded-lg p-6 text-blue-600">Loading documents...</div>
+            ) : docsError ? (
+              <div className="bg-white border border-gray-200 rounded-lg p-6 text-red-600">{docsError}</div>
+            ) : (
+              <ApplicationDetails
+                application={selectedApp}
+                documents={documents}
+                onClose={() => setSelectedApp(null)}
+                onWithdraw={handleWithdraw}
+                withdrawing={withdrawing}
+              />
+            )
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
               <div className="flex items-start gap-3">
