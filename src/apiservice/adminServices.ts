@@ -26,29 +26,23 @@ export interface CreateCategoryPayload {
 
 // Create a supplier category (admin)
 export const createAdminSupplierCategory = async (payload: CreateCategoryPayload): Promise<any> => {
-	const formData = new FormData();
-	formData.append('name', payload.name);
-	formData.append('description', payload.description);
-	formData.append('applicationFee', String(payload.applicationFee));
-	formData.append('requirements', payload.requirements);
-	formData.append('status', payload.status);
-	if (payload.documentTemplate && payload.documentTemplate instanceof File) {
-        formData.append('documentTemplate', payload.documentTemplate);
+    let bodyPayload = { ...payload };
+    if (bodyPayload.documentTemplate && bodyPayload.documentTemplate instanceof File) {
+        bodyPayload.documentTemplate = {};
     }
-
-	const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories`, {
-		method: 'POST',
-		headers: {
-			...getAuthHeaders(),
-			// Do not set Content-Type, browser will set it for FormData
-		},
-		body: formData,
-	});
-	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({}));
-		throw new Error(errorData.message || 'Failed to create supplier category');
-	}
-	return response.json();
+    const response = await fetch(`${API_BASE_URL}/admin/suppliers/categories`, {
+        method: 'POST',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bodyPayload),
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create supplier category');
+    }
+    return response.json();
 };
 
 export interface AdminCategory {
