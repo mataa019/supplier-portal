@@ -26,8 +26,11 @@ import ApplicationDetails from '../component/ApplicationDetails';
 export default function Applications() {
   const [updatingCategory, setUpdatingCategory] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
- 
-  
+  // Withdrawal modal state
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState('Submitted in error');
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+
   // Fetch applications for current user
   const [applications, setApplications] = useState<ApplicationResponse[]>([]);
   useEffect(() => {
@@ -86,16 +89,29 @@ const statusIcons = {
       setLoadingDocs(false);
     }
   };
-  const handleWithdraw = async () => {
+  // Open modal to enter withdrawal reason
+  const handleWithdraw = () => {
+    setWithdrawReason('Submitted in error');
+    setShowWithdrawModal(true);
+  };
+
+  // Confirm withdrawal after entering reason
+  const confirmWithdraw = async () => {
     if (!selectedApp) return;
-    const reason = window.prompt('Please provide a reason for withdrawal:', 'Submitted in error');
-    if (!reason) return;
+    if (!withdrawReason.trim()) {
+      alert('Please provide a reason for withdrawal.');
+      return;
+    }
     setWithdrawing(true);
     try {
-      const updated = await withdrawApplication(selectedApp.id, { reason });
+      const updated = await withdrawApplication(selectedApp.id, { reason: withdrawReason });
       setSelectedApp(updated);
-      // Optionally update applications list here if needed
-      alert('Application withdrawn successfully.');
+      setWithdrawSuccess(true);
+      // Modal will show success message, then close after a short delay
+      setTimeout(() => {
+        setShowWithdrawModal(false);
+        setWithdrawSuccess(false);
+      }, 1800);
     } catch (e: any) {
       alert(e.message || 'Failed to withdraw application');
     } finally {
@@ -299,6 +315,48 @@ const statusIcons = {
                     withdrawing={withdrawing}
                     onDelete={selectedApp.status === 'withdrawn' ? handleDelete : undefined}
                   />
+                )}
+                {/* Withdraw Modal */}
+                {showWithdrawModal && (
+                  <div className="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                      {withdrawSuccess ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <CheckCircleSolid className="w-12 h-12 text-green-500 mb-3" />
+                          <p className="text-lg font-semibold text-green-700 mb-2">Application withdrawn successfully!</p>
+                        </div>
+                      ) : (
+                        <>
+                          <h2 className="text-lg font-semibold mb-4 text-gray-900">Withdraw Application</h2>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Reason for withdrawal</label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+                            value={withdrawReason}
+                            onChange={e => setWithdrawReason(e.target.value)}
+                            placeholder="Enter reason..."
+                            disabled={withdrawing}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                              onClick={() => setShowWithdrawModal(false)}
+                              disabled={withdrawing}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                              onClick={confirmWithdraw}
+                              disabled={withdrawing}
+                            >
+                              {withdrawing ? 'Withdrawing...' : 'Confirm Withdraw'}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
