@@ -109,10 +109,18 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
               }}
               required={!editingCategory}
             />
-            {editingCategory && (
-              <p className="text-xs text-gray-500 mt-1">
-                Current: {editingCategory.documentTemplate}
-              </p>
+            {editingCategory && editingCategory.documentTemplate && (
+              <div className="mt-1">
+                <a
+                  href={editingCategory.documentTemplate}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-red-600 hover:text-red-700 underline"
+                  download={editingCategory.documentTemplate.split('/').pop() || 'template'}
+                >
+                  Download current template
+                </a>
+              </div>
             )}
           </div>
           <div>
