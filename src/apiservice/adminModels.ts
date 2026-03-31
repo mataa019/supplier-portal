@@ -1,3 +1,12 @@
+// Payload for creating/updating a category
+export interface CreateCategoryPayload {
+  name: string;
+  description: string;
+  applicationFee: number;
+  requirements: string;
+  status: string;
+  documentTemplate?: File | {} | null;
+}
 // Admin API models
 
 export interface AdminCategory {

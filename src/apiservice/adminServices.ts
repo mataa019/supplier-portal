@@ -1,4 +1,4 @@
-import type { AdminCategory, AdminSupplier, AdminSupplierUser } from './adminModels';
+import type { AdminCategory, AdminSupplier, AdminSupplierUser, CreateCategoryPayload } from './adminModels';
 // Type for supplier user
 
 type AppEnv = ImportMetaEnv & {
@@ -14,14 +14,7 @@ const getAuthHeaders = (): Record<string, string> => {
 	return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
-export interface CreateCategoryPayload {
-    name: string;
-    description: string;
-    applicationFee: number;
-    requirements: string;
-    status: string;
-    documentTemplate?: File | {} | null;
-}
+// (moved to adminModels.ts)
 
 
 // Create a supplier category (admin)
