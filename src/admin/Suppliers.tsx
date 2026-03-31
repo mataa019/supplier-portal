@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   active: 'bg-green-100 text-green-700',
   suspended: 'bg-red-100 text-red-700',
   pending: 'bg-yellow-100 text-yellow-700',
@@ -174,7 +174,7 @@ export default function Suppliers() {
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[supplier.status]}`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[supplier.status] || 'bg-gray-100 text-gray-700'}`}>
                       {supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
                     </span>
                   </td>
@@ -246,13 +246,13 @@ export default function Suppliers() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Status</p>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[selectedSupplier.status]}`}>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[selectedSupplier.status] || 'bg-gray-100 text-gray-700'}`}>
                     {selectedSupplier.status.charAt(0).toUpperCase() + selectedSupplier.status.slice(1)}
                   </span>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Registered Date</p>
-                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.registeredDate}</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.createdAt}</p>
                 </div>
               </div>
                 <div>
