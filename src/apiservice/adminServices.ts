@@ -144,7 +144,7 @@ export async function getAdminSupplier(supplierId: string): Promise<AdminSupplie
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch supplier');
     }
-    
-    return res.json();
-
+    const data = await res.json();
+    console.log('Fetched Single  Supplier:', data);
+    return data;
 }
