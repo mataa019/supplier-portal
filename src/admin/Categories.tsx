@@ -9,7 +9,7 @@ import {
   getAdminSupplierCategory,
 } from '../apiservice/adminServices';
 import type { AdminCategory } from '../apiservice/adminServices';
-import { DocumentArrowDownIcon, FolderIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/16/solid';
+import { DocumentArrowDownIcon, FolderIcon, XMarkIcon } from '@heroicons/react/16/solid';
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -212,7 +212,7 @@ function Categories() {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">{category.name}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[category.status]}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[category.status as keyof typeof statusColors]}`}>
                     {category.status.charAt(0).toUpperCase() + category.status.slice(1)}
                   </span>
                 </div>
