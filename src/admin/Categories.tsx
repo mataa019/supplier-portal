@@ -323,7 +323,7 @@ function Categories() {
                   <option value="Tax certificate">Tax certificate</option>
                   <option value="company Profile">company Profile</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</p>
+                <p className="text-xs text-gray-500 mt-1">Hold Ctrl (Windows)</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Application Fee (K)</label>
