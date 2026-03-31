@@ -6,9 +6,6 @@ import {
   FunnelIcon,
   EyeIcon,
   CheckIcon,
-  XMarkIcon,
-  DocumentTextIcon,
-  
 } from '@heroicons/react/24/outline';
 
 
@@ -82,12 +79,10 @@ export default function Applications() {
       app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       categoryName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Exclude 'draft' unless statusFilter is 'draft' or 'all'
     if (app.status === 'draft' && statusFilter !== 'draft' && statusFilter !== 'all') {
       return false;
     }
 
-    // When 'all' is selected, only show submitted/payment_pending/paid/pending/approved/rejected (not draft)
     if (statusFilter === 'all' && app.status === 'draft') {
       return false;
     }
@@ -97,7 +92,6 @@ export default function Applications() {
   });
 
 
-  // Placeholder handlers for approve/reject (should call API in real app)
   const handleApprove = (id: string) => {
     setApplications(applications.map((app) =>
       app.id === id ? { ...app, status: 'approved' } : app
@@ -265,101 +259,17 @@ export default function Applications() {
       </div>
 
       {/* View Modal */}
-      {showViewModal && selectedApp && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Application Details</h3>
-                <p className="text-sm text-gray-500">{selectedApp.id}</p>
-              </div>
-              <button onClick={() => setShowViewModal(false)} className="p-1 hover:bg-gray-100 rounded">
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-            <div className="p-4 space-y-6">
-              {/* Application Info */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Application Information</h4>
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
-                  <div>
-                    <p className="text-xs text-gray-500">Supplier ID</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.supplierId}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Category</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.category?.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Status</p>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      statusColors[selectedApp.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {statusLabels[selectedApp.status as keyof typeof statusLabels] || selectedApp.status}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Application Fee</p>
-                    <p className="text-lg font-bold text-gray-900">{selectedApp.category?.applicationFee}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Submitted</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.submittedAt ? selectedApp.submittedAt.split('T')[0] : ''}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documents */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Submitted Documents</h4>
-                <div className="space-y-2">
-                  {selectedApp.documents.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <DocumentTextIcon className="w-5 h-5 text-gray-400" />
-                        <span className="text-sm text-gray-900">{doc.fileName}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-green-600">Uploaded</span>
-                        <a href={doc.filePath} target="_blank" rel="noopener noreferrer" className="text-xs text-red-600 hover:text-red-700">View</a>
-                      </div>
-                    </div>
-                  ))}
-                  {selectedApp.documents.length === 0 && (
-                    <div className="text-xs text-gray-500">No documents submitted.</div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-between gap-3 p-4 border-t border-gray-200">
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Close
-              </button>
-              {selectedApp.status === 'pending' && (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleReject(selectedApp.id)}
-                    className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => handleApprove(selectedApp.id)}
-                    className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Approve Application
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <ApplicationDetailsModal
+        open={showViewModal}
+        application={selectedApp}
+        supplier={selectedApp ? supplierMap[selectedApp.supplierId] : undefined}
+        onClose={() => setShowViewModal(false)}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        statusColors={statusColors}
+        statusLabels={statusLabels}
+        // onDownloadPdf will be implemented next
+      />
     </div>
   );
 }
