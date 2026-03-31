@@ -1,3 +1,17 @@
+import type { SupplierApplication } from './adminModels';
+
+// List all applications for a supplier (admin)
+export async function listSupplierApplications(supplierId: string): Promise<SupplierApplication[]> {
+    const res = await fetch(`${API_BASE_URL}/admin/suppliers/${supplierId}/applications`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch supplier applications');
+    }
+    return res.json();
+}
 
 
 import type { AdminCategory, AdminSupplier, AdminSupplierUser, CreateCategoryPayload } from './adminModels';

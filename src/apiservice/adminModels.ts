@@ -1,3 +1,40 @@
+// Application document model
+export interface ApplicationDocument {
+  id: string;
+  applicationId: string;
+  type: string;
+  fileName: string;
+  filePath: string;
+  uploadedAt: string;
+}
+
+// Application category model (nested in application)
+export interface ApplicationCategory {
+  id: string;
+  name: string;
+  description: string;
+  applicationFee: number;
+  Requirements: string;
+  documentTemplate: string;
+  status: string;
+  createdAt: string;
+}
+
+// Supplier application model
+export interface SupplierApplication {
+  id: string;
+  supplierId: string;
+  categoryId: string;
+  status: string;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  remarks: string | null;
+  createdAt: string;
+  category: ApplicationCategory;
+  documents: ApplicationDocument[];
+  payments: any[];
+}
 // Payload for creating/updating a category
 export interface CreateCategoryPayload {
   name: string;
