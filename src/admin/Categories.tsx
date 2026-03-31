@@ -8,7 +8,6 @@ import {
   uploadCategoryTemplateDocument,
   getAdminSupplierCategory,
 } from '../apiservice/adminServices';
-import type { AdminCategory } from '../apiservice/adminServices';
 import { DocumentArrowDownIcon, FolderIcon } from '@heroicons/react/16/solid';
 import CategoryModal from './model/CategoryModal';
 import {
@@ -17,6 +16,7 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import type { AdminCategory } from '../apiservice/adminModels';
 
 const statusColors = {
   active: 'bg-green-100 text-green-700',
