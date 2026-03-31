@@ -15,6 +15,7 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
+    address: '',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +61,8 @@ export default function Register() {
         tpin: formData.tpin,
         phone: formData.phoneNumber,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        address: formData.address
       })
       // Navigate to OTP verification instead of login
       navigate('/verify-otp', { state: { email: formData.email } })

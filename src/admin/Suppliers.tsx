@@ -164,11 +164,15 @@ export default function Suppliers() {
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{supplier.tpin}</td>
                   <td className="px-4 py-4 hidden lg:table-cell">
                     <div className="flex flex-wrap gap-1">
-                      {supplier.categories.map((cat) => (
-                        <span key={cat} className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                          {cat}
-                        </span>
-                      ))}
+                      {(supplier.categories ?? []).length > 0 ? (
+                        supplier.categories!.map((cat) => (
+                          <span key={cat} className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                            {cat}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400">No categories</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-4">
@@ -176,7 +180,7 @@ export default function Suppliers() {
                       {supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{supplier.registeredDate}</td>
+                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{supplier.registeredDate ?? (supplier.createdAt ? supplier.createdAt.split('T')[0] : '')}</td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
@@ -253,16 +257,20 @@ export default function Suppliers() {
                   <p className="text-sm font-medium text-gray-900">{selectedSupplier.registeredDate}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-2">Categories</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedSupplier.categories.map((cat) => (
-                    <span key={cat} className="px-3 py-1 text-sm bg-red-50 text-red-700 rounded-full">
-                      {cat}
-                    </span>
-                  ))}
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Categories</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(selectedSupplier.categories ?? []).length > 0 ? (
+                      selectedSupplier.categories!.map((cat) => (
+                        <span key={cat} className="px-3 py-1 text-sm bg-red-50 text-red-700 rounded-full">
+                          {cat}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-400">No categories</span>
+                    )}
+                  </div>
                 </div>
-              </div>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t border-gray-200">
               <button
