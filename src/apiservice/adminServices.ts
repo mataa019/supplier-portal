@@ -1,5 +1,5 @@
-
-
+import type { AdminCategory, AdminSupplier, AdminSupplierUser } from './adminModels';
+// Type for supplier user
 
 type AppEnv = ImportMetaEnv & {
 	VITE_API_BASE_URL?: string
@@ -45,16 +45,7 @@ export const createAdminSupplierCategory = async (payload: CreateCategoryPayload
     return response.json();
 };
 
-export interface AdminCategory {
-  requirements: string;
-	id: string;
-	name: string;
-	description: string;
-	applicationFee: number;
-	status: string;
-	documentTemplate: string;
-	createdAt: string;
-}
+// (moved to adminModels.ts)
 
 // List all supplier categories (admin)
 export const listAdminSupplierCategories = async (): Promise<AdminCategory[]> => {
@@ -134,3 +125,19 @@ export const getAdminSupplierCategory = async (categoryId: string): Promise<Admi
     }
     return response.json();
 };
+
+// (moved to adminModels.ts)
+
+// Type for supplier
+// (moved to adminModels.ts)
+
+// List all suppliers (admin)
+export async function listAdminSuppliers(): Promise<AdminSupplier[]> {
+    const res = await fetch('/admin/suppliers');
+    if (!res.ok) {
+        throw new Error('Failed to fetch suppliers');
+    }
+    const data = await res.json();
+    console.log('Fetched suppliers:', data);
+    return data;
+}
