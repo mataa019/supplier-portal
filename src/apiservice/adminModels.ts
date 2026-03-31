@@ -42,4 +42,6 @@ export interface AdminSupplier {
   createdAt: string;
   updatedAt: string;
   user: AdminSupplierUser;
+  categories: string[]; // <-- Add this line
+
 }

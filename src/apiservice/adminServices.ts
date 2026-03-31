@@ -149,6 +149,7 @@ export async function getAdminSupplier(supplierId: string): Promise<AdminSupplie
     console.log('Fetched Single  Supplier:', data);
     return data;
 }
+
 // Delete a supplier (admin)
 export async function deleteAdminSupplier(supplierId: string): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/admin/suppliers/${supplierId}`, {

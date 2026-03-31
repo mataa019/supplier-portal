@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { listAdminSuppliers, getAdminSupplier, deleteAdminSupplier } from '../apiservice/adminServices';
+import type { AdminSupplier } from '../apiservice/adminModels';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -11,25 +13,6 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 
-interface Supplier {
-  id: string;
-  companyName: string;
-  tpin: string;
-  email: string;
-  phone: string;
-  categories: string[];
-  status: 'active' | 'suspended' | 'pending';
-  registeredDate: string;
-}
-
-const mockSuppliers: Supplier[] = [
-  { id: 'SUP-001', companyName: 'ABC Construction Ltd', tpin: '1234567890', email: 'info@abcconstruction.com', phone: '+260 97X XXX XXX', categories: ['Construction Materials'], status: 'active', registeredDate: '2026-01-15' },
-  { id: 'SUP-002', companyName: 'Tech Solutions Inc', tpin: '0987654321', email: 'contact@techsolutions.com', phone: '+260 96X XXX XXX', categories: ['IT Equipment & Services'], status: 'active', registeredDate: '2026-02-10' },
-  { id: 'SUP-003', companyName: 'CleanPro Services', tpin: '1122334455', email: 'hello@cleanpro.com', phone: '+260 95X XXX XXX', categories: ['Cleaning Services'], status: 'suspended', registeredDate: '2025-11-20' },
-  { id: 'SUP-004', companyName: 'SafeGuard Security', tpin: '5566778899', email: 'info@safeguard.com', phone: '+260 97X XXX XXX', categories: ['Security Services'], status: 'active', registeredDate: '2026-03-01' },
-  { id: 'SUP-005', companyName: 'Office Plus Zambia', tpin: '9988776655', email: 'sales@officeplus.co.zm', phone: '+260 96X XXX XXX', categories: ['Office Supplies'], status: 'pending', registeredDate: '2026-03-08' },
-  { id: 'SUP-006', companyName: 'Fresh Foods Catering', tpin: '4433221100', email: 'orders@freshfoods.com', phone: '+260 95X XXX XXX', categories: ['Catering Services'], status: 'active', registeredDate: '2025-12-05' },
-];
 
 const statusColors = {
   active: 'bg-green-100 text-green-700',
@@ -38,12 +21,21 @@ const statusColors = {
 };
 
 export default function Suppliers() {
-  const [suppliers, setSuppliers] = useState(mockSuppliers);
+  const [suppliers, setSuppliers] = useState<AdminSupplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<AdminSupplier | null>(null);
+  const [loading, setLoading] = useState(false);
+  // Fetch suppliers from API
+  useEffect(() => {
+    setLoading(true);
+    listAdminSuppliers()
+      .then(data => setSuppliers(data))
+      .catch(err => alert(err.message || 'Failed to fetch suppliers'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredSuppliers = suppliers.filter((supplier) => {
     const matchesSearch = supplier.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,9 +45,14 @@ export default function Suppliers() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to remove this supplier?')) {
-      setSuppliers(suppliers.filter((s) => s.id !== id));
+      try {
+        await deleteAdminSupplier(id);
+        setSuppliers(suppliers.filter((s) => s.id !== id));
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete supplier');
+      }
     }
   };
 
@@ -68,9 +65,14 @@ export default function Suppliers() {
     }));
   };
 
-  const handleView = (supplier: Supplier) => {
-    setSelectedSupplier(supplier);
-    setShowViewModal(true);
+  const handleView = async (supplier: AdminSupplier) => {
+    try {
+      const fresh = await getAdminSupplier(supplier.id);
+      setSelectedSupplier(fresh);
+      setShowViewModal(true);
+    } catch (err: any) {
+      alert(err.message || 'Failed to fetch supplier details');
+    }
   };
 
   return (
@@ -136,6 +138,9 @@ export default function Suppliers() {
       </div>
 
       {/* Table */}
+      {loading && (
+        <div className="text-center py-8 text-gray-500">Loading suppliers...</div>
+      )}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
