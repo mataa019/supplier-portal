@@ -1,6 +1,7 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/16/solid';
 
+import type { RefObject } from 'react';
 interface CategoryModalProps {
   show: boolean;
   onClose: () => void;
@@ -14,7 +15,7 @@ interface CategoryModalProps {
     status: 'active' | 'inactive';
   };
   setFormData: React.Dispatch<React.SetStateAction<any>>;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   setFile: (file: File | null) => void;
   editingCategory: any;
   uploading: boolean;
