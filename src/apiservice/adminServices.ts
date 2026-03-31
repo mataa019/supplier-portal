@@ -1,4 +1,5 @@
 
+
 import type { AdminCategory, AdminSupplier, AdminSupplierUser, CreateCategoryPayload } from './adminModels';
 // Type for supplier user
 
@@ -147,4 +148,16 @@ export async function getAdminSupplier(supplierId: string): Promise<AdminSupplie
     const data = await res.json();
     console.log('Fetched Single  Supplier:', data);
     return data;
+}
+// Delete a supplier (admin)
+export async function deleteAdminSupplier(supplierId: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/admin/suppliers/${supplierId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete supplier');
+    }
+    console.log(`Deleted supplier with ID: ${supplierId} + response status: ${res.status}`);
 }
