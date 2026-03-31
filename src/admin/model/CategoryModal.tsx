@@ -118,7 +118,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
                   className="text-xs text-red-600 hover:text-red-700 underline"
                   download={editingCategory.documentTemplate.split('/').pop() || 'template'}
                 >
-                  Download current template
+                  Download current Document
                 </a>
               </div>
             )}
