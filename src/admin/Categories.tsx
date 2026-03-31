@@ -22,9 +22,10 @@ const statusColors = {
   inactive: 'bg-gray-100 text-gray-600',
 };
 
-function Categories() {
-
+export function Categories() {
+  
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+    const activeCategories = categories.filter(cat => cat.status === 'active').length;
     // Fetch categories on mount
     useEffect(() => {
       const fetchCategories = async () => {
@@ -107,41 +108,50 @@ function Categories() {
     e.preventDefault();
     setUploading(true);
     try {
+      // Always ensure requirements is a non-empty string
+      const requirementsString = Array.isArray(formData.requirements)
+        ? formData.requirements.join(',')
+        : formData.requirements;
+      if (!requirementsString || requirementsString.trim() === '') {
+        alert('Please select at least one requirement.');
+        setUploading(false);
+        return;
+      }
+      if (!editingCategory && !file) {
+        alert('Please upload a document template.');
+        setUploading(false);
+        return;
+      }
+  
       if (editingCategory) {
         // Update category
         const payload = {
           name: formData.name,
           description: formData.description,
           applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
-          requirements: formData.requirements,
+          requirements: requirementsString,
           status: formData.status,
-          documentTemplate: file || {},
+          documentTemplate: file ? file.name : (editingCategory.documentTemplate || ''),
         };
         await updateAdminSupplierCategory(editingCategory.id, payload);
         // If file uploaded, upload separately
         if (file) {
           await uploadCategoryTemplateDocument(editingCategory.id, file);
         }
-        // Refresh categories
-        const data = await listAdminSupplierCategories();
-        setCategories(data);
-        setShowModal(false);
-        setFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        return;
-      }
-      // Create new category
-      const payload = {
-        name: formData.name,
-        description: formData.description,
-        applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
-        requirements: '',
-        status: formData.status,
-        documentTemplate: file || {},
-      };
-      const created = await createAdminSupplierCategory(payload);
-      if (file && created.id) {
-        await uploadCategoryTemplateDocument(created.id, file);
+      } else {
+        // Create new category
+        const payload = {
+          name: formData.name,
+          description: formData.description,
+          applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
+          requirements: requirementsString,
+          status: formData.status,
+          documentTemplate: file ? file.name : '',
+        };
+        const created = await createAdminSupplierCategory(payload);
+        if (file && created.id) {
+          await uploadCategoryTemplateDocument(created.id, file);
+        }
       }
       // Refresh categories
       const data = await listAdminSupplierCategories();
@@ -156,9 +166,7 @@ function Categories() {
     }
   };
 
-  const activeCategories = categories.filter((c) => c.status === 'active').length;
-
-  return (
+   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -391,4 +399,5 @@ function Categories() {
   );
 }
 
-export default Categories;
+
+
