@@ -148,7 +148,7 @@ export default function Suppliers() {
               <tr>
                 <th className="px-4 py-3 text-left">Company</th>
                 <th className="px-4 py-3 text-left hidden md:table-cell">TPIN</th>
-                <th className="px-4 py-3 text-left hidden lg:table-cell">Categories</th>
+                <th className="px-4 py-3 text-left hidden lg:table-cell">Address</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left hidden sm:table-cell">Registered</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -164,14 +164,12 @@ export default function Suppliers() {
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{supplier.tpin}</td>
                   <td className="px-4 py-4 hidden lg:table-cell">
                     <div className="flex flex-wrap gap-1">
-                      {(supplier.categories ?? []).length > 0 ? (
-                        supplier.categories!.map((cat) => (
-                          <span key={cat} className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                            {cat}
-                          </span>
-                        ))
+                      {supplier.address ? (
+                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                          {supplier.address}
+                        </span>
                       ) : (
-                        <span className="text-xs text-gray-400">No categories</span>
+                        <span className="text-xs text-gray-400">No address</span>
                       )}
                     </div>
                   </td>
@@ -180,7 +178,7 @@ export default function Suppliers() {
                       {supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{supplier.registeredDate ?? (supplier.createdAt ? supplier.createdAt.split('T')[0] : '')}</td>
+                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{(supplier.createdAt ? supplier.createdAt.split('T')[0] : '')}</td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
