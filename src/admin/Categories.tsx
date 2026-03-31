@@ -44,6 +44,7 @@ function Categories() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    requirements: '',
     applicationFee: '',
     documentTemplate: '', 
     status: 'active' as 'active' | 'inactive',
@@ -63,6 +64,7 @@ function Categories() {
     setFormData({
       name: '',
       description: '',
+      requirements: '',
       applicationFee: '',
       documentTemplate: '',
       status: 'active',
@@ -78,6 +80,7 @@ function Categories() {
       setFormData({
         name: cat.name,
         description: cat.description,
+        requirements: cat.requirements,
         applicationFee: String(cat.applicationFee),
         documentTemplate: cat.documentTemplate || '',
         status: cat.status === 'active' || cat.status === 'inactive' ? cat.status : 'inactive',
@@ -110,7 +113,7 @@ function Categories() {
           name: formData.name,
           description: formData.description,
           applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
-          requirements: '',
+          requirements: formData.requirements,
           status: formData.status,
           documentTemplate: file || {},
         };

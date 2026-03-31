@@ -46,6 +46,7 @@ export const createAdminSupplierCategory = async (payload: CreateCategoryPayload
 };
 
 export interface AdminCategory {
+  requirements: string;
 	id: string;
 	name: string;
 	description: string;
