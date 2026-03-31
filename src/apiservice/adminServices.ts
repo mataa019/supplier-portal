@@ -1,3 +1,4 @@
+
 import type { AdminCategory, AdminSupplier, AdminSupplierUser, CreateCategoryPayload } from './adminModels';
 // Type for supplier user
 
@@ -14,7 +15,7 @@ const getAuthHeaders = (): Record<string, string> => {
 	return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
-// (moved to adminModels.ts)
+
 
 
 // Create a supplier category (admin)
@@ -119,18 +120,31 @@ export const getAdminSupplierCategory = async (categoryId: string): Promise<Admi
     return response.json();
 };
 
-// (moved to adminModels.ts)
-
-// Type for supplier
-// (moved to adminModels.ts)
-
 // List all suppliers (admin)
 export async function listAdminSuppliers(): Promise<AdminSupplier[]> {
-    const res = await fetch('/admin/suppliers');
+    const res = await fetch(`${API_BASE_URL}/admin/suppliers`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
     if (!res.ok) {
         throw new Error('Failed to fetch suppliers');
     }
     const data = await res.json();
     console.log('Fetched suppliers:', data);
     return data;
+}
+
+// Get a single supplier (admin)
+export async function getAdminSupplier(supplierId: string): Promise<AdminSupplier> {
+    const res = await fetch(`${API_BASE_URL}/admin/suppliers/${supplierId}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch supplier');
+    }
+    
+    return res.json();
+
 }
