@@ -89,6 +89,7 @@ export interface RegisterPayload {
   phone: string
   email: string
   password: string
+  address: string
 }
 
 export const registerSupplier = async (payload: RegisterPayload) => {

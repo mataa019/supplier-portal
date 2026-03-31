@@ -130,6 +130,15 @@ export default function Register() {
               placeholder="Enter registered number"
               required
             />
+             <TextInput
+              id="address"
+              label="Company Address"
+              type="address"
+              value={formData.address}
+              onChange={handleChange('address')}
+              placeholder="Enter company address"
+              required
+            />
 
             <TextInput
               id="tpin"
