@@ -143,6 +143,7 @@ export default function Register() {
             <TextInput
               id="tpin"
               label="TPIN"
+              type="number"
               value={formData.tpin}
               onChange={handleChange('tpin')}
               placeholder="Enter TPIN"
