@@ -65,9 +65,15 @@ export default function Applications() {
       .finally(() => setLoading(false));
   }, [selectedSupplierId]);
 
+  // Build a map for supplierId -> supplier
+  const supplierMap = suppliers.reduce((acc, s) => {
+    acc[s.id] = s;
+    return acc;
+  }, {} as Record<string, AdminSupplier>);
+
   const filteredApplications = applications.filter((app) => {
-    // Use category name if available
-    const companyName = app.supplierId || '';
+    const supplier = supplierMap[app.supplierId];
+    const companyName = supplier?.companyName || '';
     const categoryName = app.category?.name || '';
     const matchesSearch =
       companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -206,14 +212,14 @@ export default function Applications() {
               {filteredApplications.map((app) => (
                 <tr key={app.id} className="hover:bg-gray-50">
                   <td className="px-4 py-4">
-                    <p className="text-sm font-medium text-gray-900">{app.supplierId}</p>
+                    <p className="text-sm font-medium text-gray-900">{supplierMap[app.supplierId]?.companyName || app.supplierId}</p>
                     <p className="text-xs text-gray-500">{app.id}</p>
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{app.category?.name}</td>
                   <td className="px-4 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">{app.category?.applicationFee}</td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[app.status]}`}>
-                      {statusLabels[app.status]}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[app.status] || 'bg-gray-100 text-gray-700'}`}>
+                      {app.status}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{app.submittedAt ? app.submittedAt.split('T')[0] : ''}</td>
