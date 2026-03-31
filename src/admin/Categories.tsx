@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import {
   createAdminSupplierCategory,
@@ -7,49 +8,29 @@ import {
   uploadCategoryTemplateDocument,
   getAdminSupplierCategory,
 } from '../apiservice/adminServices';
+import type { AdminCategory } from '../apiservice/adminServices';
+import { DocumentArrowDownIcon, FolderIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/16/solid';
 import {
-  MagnifyingGlassIcon,
   PlusIcon,
+  MagnifyingGlassIcon,
   PencilIcon,
-  TrashIcon,
-  XMarkIcon,
-  FolderIcon,
-  DocumentArrowDownIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  applicationFee: string;
-  documentTemplate: string;
-  suppliersCount: number;
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
-
-// Remove mockCategories, categories will be fetched from API
 
 const statusColors = {
   active: 'bg-green-100 text-green-700',
   inactive: 'bg-gray-100 text-gray-600',
 };
 
-  const [categories, setCategories] = useState<Category[]>([]);
+function Categories() {
+
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
     // Fetch categories on mount
     useEffect(() => {
       const fetchCategories = async () => {
         try {
           const data = await listAdminSupplierCategories();
-          setCategories(
-            data.map((cat: any) => ({
-              ...cat,
-              applicationFee: `K${cat.applicationFee}`,
-              suppliersCount: cat.suppliersCount || 0,
-              documentTemplate: cat.documentTemplate || '',
-              createdAt: cat.createdAt ? cat.createdAt.split('T')[0] : '',
-            }))
-          );
+          setCategories(data);
         } catch (err: any) {
           alert(err.message || 'Failed to fetch categories');
         }
@@ -58,13 +39,13 @@ const statusColors = {
     }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     applicationFee: '',
-    documentTemplate: '', // keep for display, but file is handled separately
+    documentTemplate: '', 
     status: 'active' as 'active' | 'inactive',
   });
   const [uploading, setUploading] = useState(false);
@@ -89,7 +70,7 @@ const statusColors = {
     setShowModal(true);
   };
 
-  const handleEdit = async (category: Category) => {
+  const handleEdit = async (category: AdminCategory) => {
     try {
       // Fetch latest category data from API
       const cat = await getAdminSupplierCategory(category.id);
@@ -99,7 +80,7 @@ const statusColors = {
         description: cat.description,
         applicationFee: String(cat.applicationFee),
         documentTemplate: cat.documentTemplate || '',
-        status: cat.status,
+        status: cat.status === 'active' || cat.status === 'inactive' ? cat.status : 'inactive',
       });
       setFile(null);
       setShowModal(true);
@@ -109,11 +90,6 @@ const statusColors = {
   };
 
   const handleDelete = async (id: string) => {
-    const category = categories.find((c) => c.id === id);
-    if (category && category.suppliersCount > 0) {
-      alert('Cannot delete category with active suppliers. Please reassign suppliers first.');
-      return;
-    }
     if (confirm('Are you sure you want to delete this category?')) {
       try {
         await deleteAdminSupplierCategory(id);
@@ -138,22 +114,14 @@ const statusColors = {
           status: formData.status,
           documentTemplate: file || {},
         };
-        const updated = await updateAdminSupplierCategory(editingCategory.id, payload);
+        await updateAdminSupplierCategory(editingCategory.id, payload);
         // If file uploaded, upload separately
         if (file) {
           await uploadCategoryTemplateDocument(editingCategory.id, file);
         }
         // Refresh categories
         const data = await listAdminSupplierCategories();
-        setCategories(
-          data.map((cat: any) => ({
-            ...cat,
-            applicationFee: `K${cat.applicationFee}`,
-            suppliersCount: cat.suppliersCount || 0,
-            documentTemplate: cat.documentTemplate || '',
-            createdAt: cat.createdAt ? cat.createdAt.split('T')[0] : '',
-          }))
-        );
+        setCategories(data);
         setShowModal(false);
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -169,21 +137,12 @@ const statusColors = {
         documentTemplate: file || {},
       };
       const created = await createAdminSupplierCategory(payload);
-      // If file uploaded, upload separately
       if (file && created.id) {
         await uploadCategoryTemplateDocument(created.id, file);
       }
       // Refresh categories
       const data = await listAdminSupplierCategories();
-      setCategories(
-        data.map((cat: any) => ({
-          ...cat,
-          applicationFee: `K${cat.applicationFee}`,
-          suppliersCount: cat.suppliersCount || 0,
-          documentTemplate: cat.documentTemplate || '',
-          createdAt: cat.createdAt ? cat.createdAt.split('T')[0] : '',
-        }))
-      );
+      setCategories(data);
       setShowModal(false);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -194,7 +153,6 @@ const statusColors = {
     }
   };
 
-  const totalSuppliers = categories.reduce((acc, c) => acc + c.suppliersCount, 0);
   const activeCategories = categories.filter((c) => c.status === 'active').length;
 
   return (
@@ -215,7 +173,7 @@ const statusColors = {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
           <p className="text-sm text-gray-500">Total Categories</p>
@@ -223,10 +181,6 @@ const statusColors = {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-2xl font-bold text-green-600">{activeCategories}</p>
           <p className="text-sm text-gray-500">Active</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-2xl font-bold text-blue-600">{totalSuppliers}</p>
-          <p className="text-sm text-gray-500">Total Suppliers</p>
         </div>
       </div>
 
@@ -288,10 +242,7 @@ const statusColors = {
                 <span className="text-gray-500">Application Fee</span>
                 <span className="font-semibold text-gray-900">{category.applicationFee}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Suppliers</span>
-                <span className="font-semibold text-gray-900">{category.suppliersCount}</span>
-              </div>
+              {/* No suppliersCount field in API, so this section is removed */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Template</span>
                 {category.documentTemplate ? (
@@ -416,3 +367,5 @@ const statusColors = {
     </div>
   );
 }
+
+export default Categories;
