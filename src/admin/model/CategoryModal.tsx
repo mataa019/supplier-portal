@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { XMarkIcon } from '@heroicons/react/16/solid';
 
 interface CategoryModalProps {
