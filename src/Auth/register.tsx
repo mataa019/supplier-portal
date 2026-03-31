@@ -133,7 +133,7 @@ export default function Register() {
              <TextInput
               id="address"
               label="Company Address"
-              type="address"
+              type="text"
               value={formData.address}
               onChange={handleChange('address')}
               placeholder="Enter company address"
