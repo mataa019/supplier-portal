@@ -127,22 +127,6 @@ export default function Applications() {
         <p className="text-sm text-gray-500 mt-1">Review and manage supplier applications</p>
       </div>
 
-      {/* Supplier Selector */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Select Supplier</label>
-        <select
-          value={selectedSupplierId}
-          onChange={e => setSelectedSupplierId(e.target.value)}
-          className="w-full max-w-xs px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          <option value="">-- Select a supplier --</option>
-          {suppliers.map(s => (
-            <option key={s.id} value={s.id}>{s.companyName} ({s.email})</option>
-          ))}
-        </select>
-      </div>
-
-      {loading && <div className="text-center py-8 text-gray-500">Loading applications...</div>}
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
