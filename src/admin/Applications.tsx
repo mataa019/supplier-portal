@@ -218,8 +218,10 @@ export default function Applications() {
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{app.category?.name}</td>
                   <td className="px-4 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">{app.category?.applicationFee}</td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[app.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {app.status}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      statusColors[app.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {statusLabels[app.status as keyof typeof statusLabels] || app.status}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{app.submittedAt ? app.submittedAt.split('T')[0] : ''}</td>
