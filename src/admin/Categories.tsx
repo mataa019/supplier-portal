@@ -263,6 +263,7 @@ function Categories() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                    download={category.documentTemplate.split('/').pop() || 'template'}
                   >
                     <DocumentArrowDownIcon className="w-4 h-4" />
                     <span className="text-xs">Download</span>
