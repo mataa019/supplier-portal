@@ -22,7 +22,7 @@ const statusColors = {
   inactive: 'bg-gray-100 text-gray-600',
 };
 
-export function Categories() {
+function Categories() {
   
   const [categories, setCategories] = useState<AdminCategory[]>([]);
     const activeCategories = categories.filter(cat => cat.status === 'active').length;
@@ -398,6 +398,8 @@ export function Categories() {
     </div>
   );
 }
+
+export default Categories;
 
 
 
