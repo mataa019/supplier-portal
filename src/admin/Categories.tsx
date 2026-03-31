@@ -304,6 +304,16 @@ function Categories() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
+                <textarea
+                  value={formData.requirements || ''}
+                  onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  required
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Application Fee (K)</label>
                 <input
                   type="text"
@@ -315,17 +325,14 @@ function Categories() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Document Template</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Document Template (file name)</label>
                 <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
+                  type="text"
+                  value={formData.documentTemplate}
+                  onChange={(e) => setFormData({ ...formData, documentTemplate: e.target.value })}
+                  placeholder="e.g., template.pdf"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  ref={fileInputRef}
-                  onChange={e => {
-                    const f = e.target.files && e.target.files[0];
-                    setFile(f || null);
-                    setFormData({ ...formData, documentTemplate: f ? f.name : '' });
-                  }}
+                  required
                 />
                 {editingCategory && (
                   <p className="text-xs text-gray-500 mt-1">
