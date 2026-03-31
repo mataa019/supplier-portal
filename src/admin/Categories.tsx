@@ -308,13 +308,22 @@ function Categories() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
-                <textarea
-                  value={formData.requirements || ''}
-                  onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                  rows={2}
+                <select
+                  multiple
+                  value={formData.requirements ? formData.requirements.split(',') : []}
+                  onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions, option => option.value);
+                    setFormData({ ...formData, requirements: selected.join(',') });
+                  }}
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   required
-                />
+                >
+                  <option value="Application form">Application form</option>
+                  <option value="Registration Certificate">Registration Certificate</option>
+                  <option value="Tax certificate">Tax certificate</option>
+                  <option value="company Profile">company Profile</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Application Fee (K)</label>
