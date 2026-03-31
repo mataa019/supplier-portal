@@ -8,7 +8,7 @@ import {
   CheckIcon,
   XMarkIcon,
   DocumentTextIcon,
-  ClockIcon,
+  
 } from '@heroicons/react/24/outline';
 
 
@@ -17,17 +17,19 @@ import {
 
 
 const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-700',
+  submitted: 'bg-gray-100 text-gray-700',
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
   payment_pending: 'bg-blue-100 text-blue-700',
+  paid: 'bg-green-200 text-green-800',
 };
 
 const statusLabels = {
-  pending: 'Pending Review',
+  submitted: 'Submitted',
   approved: 'Approved',
   rejected: 'Rejected',
   payment_pending: 'Awaiting Payment',
+  paid: 'Paid',
 };
 
 
@@ -79,6 +81,17 @@ export default function Applications() {
       companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       categoryName.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Exclude 'draft' unless statusFilter is 'draft' or 'all'
+    if (app.status === 'draft' && statusFilter !== 'draft' && statusFilter !== 'all') {
+      return false;
+    }
+
+    // When 'all' is selected, only show submitted/payment_pending/paid/pending/approved/rejected (not draft)
+    if (statusFilter === 'all' && app.status === 'draft') {
+      return false;
+    }
+
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -169,10 +182,12 @@ export default function Applications() {
               className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="all">All Status</option>
-              <option value="pending">Pending Review</option>
+              <option value="submitted">Submitted</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
               <option value="payment_pending">Awaiting Payment</option>
+              <option value="paid">Paid</option>
+              <option value="draft">Draft</option>
             </select>
           </div>
         </div>
