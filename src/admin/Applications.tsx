@@ -213,7 +213,6 @@ export default function Applications() {
                 <tr key={app.id} className="hover:bg-gray-50">
                   <td className="px-4 py-4">
                     <p className="text-sm font-medium text-gray-900">{supplierMap[app.supplierId]?.companyName || app.supplierId}</p>
-                    <p className="text-xs text-gray-500">{app.id}</p>
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{app.category?.name}</td>
                   <td className="px-4 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">{app.category?.applicationFee}</td>
@@ -294,8 +293,10 @@ export default function Applications() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Status</p>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[selectedApp.status]}`}>
-                      {statusLabels[selectedApp.status]}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      statusColors[selectedApp.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {statusLabels[selectedApp.status as keyof typeof statusLabels] || selectedApp.status}
                     </span>
                   </div>
                   <div>
