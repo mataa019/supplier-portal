@@ -177,10 +177,14 @@ export async function listSupplierApplications(supplierId: string): Promise<Supp
     return res.json();
 }
 
-export async  function ApproveApplication(applicationId: string): Promise<void> {
+export async function ApproveApplication(applicationId: string, remarks: string): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/approve`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
+        method: 'PATCH',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ remarks }),
     });
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
