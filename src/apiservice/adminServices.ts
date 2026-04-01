@@ -194,4 +194,21 @@ export async function ApproveApplication(applicationId: string, remarks: string)
     console.log('Approved application:', data);
     return data;
 }
-   
+
+export async function RejectApplication(applicationId: string, remarks: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/reject`, {
+        method: 'PATCH',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ remarks }),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to reject application');
+    }
+    const data = await res.json();
+    console.log('Rejected application:', data);
+    return data;
+}
