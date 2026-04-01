@@ -176,7 +176,7 @@ export async function listSupplierApplications(supplierId: string): Promise<Supp
     }
     return res.json();
 }
-
+// Get a single application (admin)
 export async function ApproveApplication(applicationId: string, remarks: string): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/approve`, {
         method: 'PATCH',
@@ -194,7 +194,7 @@ export async function ApproveApplication(applicationId: string, remarks: string)
     console.log('Approved application:', data);
     return data;
 }
-
+// Reject an application (admin)
 export async function RejectApplication(applicationId: string, remarks: string): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/reject`, {
         method: 'PATCH',
@@ -210,5 +210,23 @@ export async function RejectApplication(applicationId: string, remarks: string):
     }
     const data = await res.json();
     console.log('Rejected application:', data);
+    return data;
+}
+// Withdraw an application (admin)
+export async function withdrawApplication(applicationId: string, remarks: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/withdraw`, {
+        method: 'PATCH',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ remarks }),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to withdraw application');
+    }
+    const data = await res.json();
+    console.log('Withdrawn application:', data);
     return data;
 }
