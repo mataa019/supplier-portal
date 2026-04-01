@@ -1,5 +1,44 @@
 import { useState, useEffect } from 'react';
-import { getAllApplications, listAdminSuppliers, getAdminSupplier } from '../apiservice/adminServices';
+// Simple modal for remarks input
+function RemarksModal({ open, onClose, onSubmit, action, loading }: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (remarks: string) => void;
+  action: 'approve' | 'reject';
+  loading?: boolean;
+}) {
+  const [remarks, setRemarks] = useState('');
+  useEffect(() => { if (open) setRemarks(''); }, [open]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+        <h2 className="text-lg font-semibold mb-2">{action === 'approve' ? 'Approve' : 'Reject'} Application</h2>
+        <label className="block text-sm mb-2">Remarks<span className="text-red-500">*</span></label>
+        <textarea
+          className="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+          rows={3}
+          value={remarks}
+          onChange={e => setRemarks(e.target.value)}
+          disabled={loading}
+        />
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-1 rounded bg-gray-200 text-gray-700"
+            onClick={onClose}
+            disabled={loading}
+          >Cancel</button>
+          <button
+            className={`px-4 py-1 rounded text-white ${action === 'approve' ? 'bg-green-600' : 'bg-red-600'} ${loading ? 'opacity-60' : ''}`}
+            onClick={() => onSubmit(remarks)}
+            disabled={loading || !remarks.trim()}
+          >{action === 'approve' ? 'Approve' : 'Reject'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+import { getAllApplications, listAdminSuppliers, getAdminSupplier, ApproveApplication, RejectApplication } from '../apiservice/adminServices';
 import type { SupplierApplication, AdminSupplier } from '../apiservice/adminModels';
 import {
   MagnifyingGlassIcon,
@@ -101,23 +140,49 @@ export default function Applications() {
   const filteredApplications = applications;
 
 
-  const handleApprove = (id: string) => {
-    setApplications(applications.map((app) =>
-      app.id === id ? { ...app, status: 'approved' } : app
-    ));
-    if (selectedApp?.id === id && selectedApp) {
-      setSelectedApp({ ...selectedApp, status: 'approved' });
-    }
+  // Remarks modal state
+  const [remarksModal, setRemarksModal] = useState<{
+    open: boolean;
+    action: 'approve' | 'reject';
+    appId: string | null;
+  }>({ open: false, action: 'approve', appId: null });
+  const [remarksLoading, setRemarksLoading] = useState(false);
+
+  const openRemarksModal = (action: 'approve' | 'reject', appId: string) => {
+    setRemarksModal({ open: true, action, appId });
+  };
+  const closeRemarksModal = () => {
+    setRemarksModal({ open: false, action: 'approve', appId: null });
   };
 
-  const handleReject = (id: string) => {
-    if (confirm('Are you sure you want to reject this application?')) {
-      setApplications(applications.map((app) =>
-        app.id === id ? { ...app, status: 'rejected' } : app
-      ));
-      if (selectedApp?.id === id && selectedApp) {
-        setSelectedApp({ ...selectedApp, status: 'rejected' });
+  const handleRemarksSubmit = async (remarks: string) => {
+    if (!remarksModal.appId) return;
+    setRemarksLoading(true);
+    try {
+      if (remarksModal.action === 'approve') {
+        await ApproveApplication(remarksModal.appId, remarks);
+        setApplications(applications.map((app) =>
+          app.id === remarksModal.appId ? { ...app, status: 'approved', remarks } : app
+        ));
+        if (selectedApp?.id === remarksModal.appId && selectedApp) {
+          setSelectedApp({ ...selectedApp, status: 'approved', remarks });
+        }
+        alert('Application approved successfully.');
+      } else {
+        await RejectApplication(remarksModal.appId, remarks);
+        setApplications(applications.map((app) =>
+          app.id === remarksModal.appId ? { ...app, status: 'rejected', remarks } : app
+        ));
+        if (selectedApp?.id === remarksModal.appId && selectedApp) {
+          setSelectedApp({ ...selectedApp, status: 'rejected', remarks });
+        }
+        alert('Application rejected successfully.');
       }
+      closeRemarksModal();
+    } catch (err: any) {
+      alert(err.message || 'Failed to process application');
+    } finally {
+      setRemarksLoading(false);
     }
   };
 
@@ -235,24 +300,24 @@ export default function Applications() {
                       >
                         <EyeIcon className="w-4 h-4" />
                       </button>
-                      {app.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleApprove(app.id)}
-                            className="p-1.5 text-green-600 hover:bg-green-50 rounded"
-                            title="Approve"
-                          >
-                            <CheckIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleReject(app.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded"
-                            title="Reject"
-                          >
-                            <XMarkIcon className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
+                      <>
+                        <button
+                          onClick={() => app.status === 'pending' && openRemarksModal('approve', app.id)}
+                          className={`p-1.5 rounded ${app.status === 'pending' ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 cursor-not-allowed'}`}
+                          title="Approve"
+                          disabled={app.status !== 'pending'}
+                        >
+                          <CheckIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => app.status === 'pending' && openRemarksModal('reject', app.id)}
+                          className={`p-1.5 rounded ${app.status === 'pending' ? 'text-red-600 hover:bg-red-50' : 'text-gray-300 cursor-not-allowed'}`}
+                          title="Reject"
+                          disabled={app.status !== 'pending'}
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </>
                     </div>
                   </td>
                 </tr>
@@ -286,6 +351,15 @@ export default function Applications() {
       </div>
 
       {/* View Modal */}
+
+      <RemarksModal
+        open={remarksModal.open}
+        onClose={closeRemarksModal}
+        onSubmit={handleRemarksSubmit}
+        action={remarksModal.action}
+        loading={remarksLoading}
+      />
+
       <ApplicationDetailsModal
         open={showViewModal}
         application={selectedApp}
@@ -295,8 +369,8 @@ export default function Applications() {
             : undefined
         }
         onClose={() => setShowViewModal(false)}
-        onApprove={handleApprove}
-        onReject={handleReject}
+        onApprove={id => openRemarksModal('approve', id)}
+        onReject={id => openRemarksModal('reject', id)}
         statusColors={statusColors}
         statusLabels={statusLabels}
       />
