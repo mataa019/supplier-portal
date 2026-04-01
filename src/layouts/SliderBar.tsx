@@ -14,8 +14,8 @@ const menuItems = [
   { path: '/dashboard/categories', label: 'Categories', icon: FolderIcon },
   { path: '/dashboard/apply', label: 'Apply', icon: PencilSquareIcon },
   { path: '/dashboard/documents', label: 'Documents', icon: DocumentTextIcon },
+  { path: '/dashboard/applications', label: 'Applications', icon: ClipboardDocumentListIcon },
   { path: '/dashboard/payment', label: 'Payment', icon: CreditCardIcon },
-  { path: '/dashboard/applications', label: 'My Applications', icon: ClipboardDocumentListIcon },
 ];
 
 interface SidebarProps {

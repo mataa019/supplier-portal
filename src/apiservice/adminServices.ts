@@ -165,17 +165,7 @@ export async function deleteAdminSupplier(supplierId: string): Promise<void> {
 }
 //APPLICATIONS
 
-export interface ApplicationFilters {
-    page?: number;
-    limit?: number;
-    status?: string;
-    categoryId?: string;
-    supplierId?: string;
-    search?: string;
-
-}
-
-export async function getAllApplications(filters: ApplicationFilters = {}): Promise<SupplierApplication[]> {
+// (moved to ApiServiceModel.ts)
     const params = new URLSearchParams();
     if (filters.page !== undefined) params.append('page', String(filters.page));
     if (filters.limit !== undefined) params.append('limit', String(filters.limit));
