@@ -171,7 +171,7 @@ export interface ApplicationFilters {
     status?: string;
     categoryId?: string;
     supplierId?: string;
-    
+
 }
 
 export async function getAllApplications(filters: ApplicationFilters = {}): Promise<SupplierApplication[]> {
@@ -190,7 +190,9 @@ export async function getAllApplications(filters: ApplicationFilters = {}): Prom
     if (!res.ok) {
         throw new Error('Failed to fetch applications');
     }
-    return res.json();
+    const data = await res.json();
+    console.log('Fetched All  applications:', data);
+    return data;
 }
 
 
