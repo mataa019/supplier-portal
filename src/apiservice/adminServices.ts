@@ -171,6 +171,7 @@ export interface ApplicationFilters {
     status?: string;
     categoryId?: string;
     supplierId?: string;
+    search?: string;
 
 }
 
@@ -181,6 +182,7 @@ export async function getAllApplications(filters: ApplicationFilters = {}): Prom
     if (filters.status) params.append('status', filters.status);
     if (filters.categoryId) params.append('categoryId', filters.categoryId);
     if (filters.supplierId) params.append('supplierId', filters.supplierId);
+    if (filters.search) params.append('search', filters.search);
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const res = await fetch(`${API_BASE_URL}/admin/applications${queryString}`, {

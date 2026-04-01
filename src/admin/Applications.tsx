@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listSupplierApplications, listAdminSuppliers } from '../apiservice/adminServices';
+import { getAllApplications, listAdminSuppliers, getAdminSupplier } from '../apiservice/adminServices';
 import type { SupplierApplication, AdminSupplier } from '../apiservice/adminModels';
 import {
   MagnifyingGlassIcon,
@@ -35,6 +35,7 @@ const statusLabels = {
 
 export default function Applications() {
   const [suppliers, setSuppliers] = useState<AdminSupplier[]>([]);
+  const [supplierMap, setSupplierMap] = useState<Record<string, AdminSupplier>>({});
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
   const [applications, setApplications] = useState<SupplierApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +44,9 @@ export default function Applications() {
   const [selectedApp, setSelectedApp] = useState<SupplierApplication | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Fetch suppliers on mount
   useEffect(() => {
@@ -56,42 +60,45 @@ export default function Applications() {
       .finally(() => setLoadingSuppliers(false));
   }, []);
 
-  // Fetch applications when supplier changes
+  // Fetch applications when filters change
   useEffect(() => {
-    if (!selectedSupplierId) return;
     setLoading(true);
-    listSupplierApplications(selectedSupplierId)
-      .then(setApplications)
+    getAllApplications({
+      supplierId: selectedSupplierId || undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      search: searchTerm || undefined,
+      page,
+      limit,
+    })
+      .then((res: any) => {
+        // API returns { data: Application[], meta: ... }
+        setApplications(res.data || []);
+        setTotalPages(res.meta?.totalPages || 1);
+      })
       .catch((err) => alert(err.message || 'Failed to fetch applications'))
       .finally(() => setLoading(false));
-  }, [selectedSupplierId]);
+  }, [selectedSupplierId, statusFilter, searchTerm, page, limit]);
 
-  // Build a map for supplierId -> supplier
-  const supplierMap = suppliers.reduce((acc, s) => {
-    acc[s.id] = s;
-    return acc;
-  }, {} as Record<string, AdminSupplier>);
+  // Fetch supplier details for all unique supplierIds in applications
+  useEffect(() => {
+    const uniqueSupplierIds = Array.from(new Set(applications.map(app => app.supplierId)));
+    const missingSupplierIds = uniqueSupplierIds.filter(id => !supplierMap[id]);
+    if (missingSupplierIds.length === 0) return;
+    Promise.all(missingSupplierIds.map(id => getAdminSupplier(id).catch(() => null)))
+      .then(results => {
+        const newMap: Record<string, AdminSupplier> = { ...supplierMap };
+        results.forEach((supplier, idx) => {
+          if (supplier && missingSupplierIds[idx]) {
+            newMap[missingSupplierIds[idx]] = supplier;
+          }
+        });
+        setSupplierMap(newMap);
+      });
+  }, [applications]);
 
-  const filteredApplications = applications.filter((app) => {
-    const supplier = supplierMap[app.supplierId];
-    const companyName = supplier?.companyName || '';
-    const categoryName = app.category?.name || '';
-    const matchesSearch =
-      companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      categoryName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (app.status === 'draft' && statusFilter !== 'draft' && statusFilter !== 'all') {
-      return false;
-    }
-
-    if (statusFilter === 'all' && app.status === 'draft') {
-      return false;
-    }
-
-    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // No need to filter client-side, server handles it
+  const filteredApplications = applications;
 
 
   const handleApprove = (id: string) => {
@@ -258,20 +265,42 @@ export default function Applications() {
             <p className="text-gray-500">No applications found</p>
           </div>
         )}
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center gap-2 py-4">
+          <button
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 disabled:opacity-50"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
+          <button
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 disabled:opacity-50"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* View Modal */}
       <ApplicationDetailsModal
         open={showViewModal}
         application={selectedApp}
-        supplier={selectedApp ? supplierMap[selectedApp.supplierId] : undefined}
+        supplier={
+          selectedApp?.supplierId
+            ? supplierMap[selectedApp.supplierId]
+            : undefined
+        }
         onClose={() => setShowViewModal(false)}
         onApprove={handleApprove}
         onReject={handleReject}
         statusColors={statusColors}
         statusLabels={statusLabels}
-        // onDownloadPdf will be implemented next
       />
+
     </div>
   );
 }
