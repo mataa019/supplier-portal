@@ -6,7 +6,9 @@ import {
   FunnelIcon,
   EyeIcon,
   CheckIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
+import ApplicationDetailsModal from './model/ApplicationDetailsModal';
 
 
 

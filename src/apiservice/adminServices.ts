@@ -176,3 +176,18 @@ export async function listSupplierApplications(supplierId: string): Promise<Supp
     }
     return res.json();
 }
+
+export async  function ApproveApplication(applicationId: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/approve`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to approve application');
+    }
+    const data = await res.json();
+    console.log('Approved application:', data);
+    return data;
+}
+   

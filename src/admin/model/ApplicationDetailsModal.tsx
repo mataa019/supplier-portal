@@ -2,7 +2,7 @@ import React from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import type { SupplierApplication, AdminSupplier } from '../apiservice/adminModels';
+import type { SupplierApplication, AdminSupplier } from '../../apiservice/adminModels';
 
 interface ApplicationDetailsModalProps {
   open: boolean;
