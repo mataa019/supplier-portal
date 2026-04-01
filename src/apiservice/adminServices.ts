@@ -163,6 +163,36 @@ export async function deleteAdminSupplier(supplierId: string): Promise<void> {
     }
     console.log(`Deleted supplier with ID: ${supplierId} + response status: ${res.status}`);
 }
+//APPLICATIONS
+
+export interface ApplicationFilters {
+    page?: number;
+    limit?: number;
+    status?: string;
+    categoryId?: string;
+    supplierId?: string;
+    
+}
+
+export async function getAllApplications(filters: ApplicationFilters = {}): Promise<SupplierApplication[]> {
+    const params = new URLSearchParams();
+    if (filters.page !== undefined) params.append('page', String(filters.page));
+    if (filters.limit !== undefined) params.append('limit', String(filters.limit));
+    if (filters.status) params.append('status', filters.status);
+    if (filters.categoryId) params.append('categoryId', filters.categoryId);
+    if (filters.supplierId) params.append('supplierId', filters.supplierId);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE_URL}/admin/applications${queryString}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        throw new Error('Failed to fetch applications');
+    }
+    return res.json();
+}
+
 
 // List all applications for a supplier (admin)
 export async function listSupplierApplications(supplierId: string): Promise<SupplierApplication[]> {
