@@ -88,21 +88,20 @@ export default function Applications() {
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch suppliers on mount
   useEffect(() => {
     setLoadingSuppliers(true);
     listAdminSuppliers()
       .then((data) => {
         setSuppliers(data);
-        // Do not auto-select a supplier; default is all applications
       })
       .catch((err) => alert(err.message || 'Failed to fetch suppliers'))
       .finally(() => setLoadingSuppliers(false));
   }, []);
 
-  // Fetch applications when filters change
   useEffect(() => {
     setLoading(true);
+    const minDuration = 2300;
+    const start = Date.now();
     getAllApplications({
       supplierId: selectedSupplierId ? selectedSupplierId : undefined,
       status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -116,7 +115,15 @@ export default function Applications() {
         setTotalPages(res.meta?.totalPages || 1);
       })
       .catch((err) => alert(err.message || 'Failed to fetch applications'))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      });
   }, [selectedSupplierId, statusFilter, searchTerm, page, limit]);
 
   // Fetch supplier details for all unique supplierIds in applications

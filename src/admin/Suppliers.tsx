@@ -31,10 +31,20 @@ export default function Suppliers() {
   // Fetch suppliers from API
   useEffect(() => {
     setLoading(true);
+    const minDuration = 2300;
+    const start = Date.now();
     listAdminSuppliers()
       .then(data => setSuppliers(data))
       .catch(err => alert(err.message || 'Failed to fetch suppliers'))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      });
   }, []);
 
   const filteredSuppliers = suppliers.filter((supplier) => {

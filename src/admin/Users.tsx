@@ -115,6 +115,22 @@ export default function Users() {
     return matchesSearch && matchesRole;
   });
 
+  // Simulate loading users from API with minimum duration
+  useEffect(() => {
+    setLoading(true);
+    const minDuration = 2300;
+    const start = Date.now();
+    setTimeout(() => {
+      const elapsed = Date.now() - start;
+      const remaining = minDuration - elapsed;
+      if (remaining > 0) {
+        setTimeout(() => setLoading(false), remaining);
+      } else {
+        setLoading(false);
+      }
+    }, 500); // Simulate API call
+  }, []);
+
   const handleAdd = () => {
     setEditingUser(null);
     setFormData({
