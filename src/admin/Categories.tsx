@@ -32,13 +32,21 @@ function Categories() {
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
+      const minDuration = 2300;
+      const start = Date.now();
       try {
         const data = await listAdminSupplierCategories();
         setCategories(data);
       } catch (err: any) {
         alert(err.message || 'Failed to fetch categories');
       } finally {
-        setLoading(false);
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
       }
     };
     fetchCategories();

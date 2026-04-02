@@ -5,7 +5,6 @@ import type { AdminSupplier } from '../apiservice/adminModels';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
-  PencilSquareIcon,
   TrashIcon,
   EyeIcon,
   XMarkIcon,
