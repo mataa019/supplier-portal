@@ -8,6 +8,7 @@ import {
   UserCircleIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 interface User {
   id: string;
@@ -104,6 +105,7 @@ export default function Users() {
     status: 'active' as 'active' | 'inactive',
     password: '',
   });
+  const [loading, setLoading] = useState(false); // Add if not present
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =

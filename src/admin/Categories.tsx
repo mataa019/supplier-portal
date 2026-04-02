@@ -1,3 +1,4 @@
+import LoadingOverlay from '../component/LoadingOverlay';
 
 import { useState, useRef, useEffect } from 'react';
 import {
@@ -24,21 +25,24 @@ const statusColors = {
 };
 
 function Categories() {
-  
   const [categories, setCategories] = useState<AdminCategory[]>([]);
-    const activeCategories = categories.filter(cat => cat.status === 'active').length;
-    // Fetch categories on mount
-    useEffect(() => {
-      const fetchCategories = async () => {
-        try {
-          const data = await listAdminSupplierCategories();
-          setCategories(data);
-        } catch (err: any) {
-          alert(err.message || 'Failed to fetch categories');
-        }
-      };
-      fetchCategories();
-    }, []);
+  const [loading, setLoading] = useState(false);
+  const activeCategories = categories.filter(cat => cat.status === 'active').length;
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      try {
+        const data = await listAdminSupplierCategories();
+        setCategories(data);
+      } catch (err: any) {
+        alert(err.message || 'Failed to fetch categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
@@ -167,8 +171,9 @@ function Categories() {
     }
   };
 
-   return (
+  return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {loading && <LoadingOverlay message="Loading..." />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>

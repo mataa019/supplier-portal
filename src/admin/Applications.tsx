@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import LoadingOverlay from '../component/LoadingOverlay';
 // Simple modal for remarks input
 function RemarksModal({ open, onClose, onSubmit, action, loading }: {
   open: boolean;
@@ -201,6 +202,7 @@ export default function Applications() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {(loading || loadingSuppliers) && <LoadingOverlay message="Loading..." />}
       {loadingSuppliers && <div className="text-center py-8 text-gray-500">Loading suppliers...</div>}
       {/* Header */}
       <div className="mb-6">

@@ -1,3 +1,4 @@
+import LoadingOverlay from '../component/LoadingOverlay';
 import { useState, useEffect } from 'react';
 import { listAdminSuppliers, getAdminSupplier, deleteAdminSupplier } from '../apiservice/adminServices';
 import type { AdminSupplier } from '../apiservice/adminModels';
@@ -77,6 +78,7 @@ export default function Suppliers() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {loading && <LoadingOverlay message="Loading..." />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
