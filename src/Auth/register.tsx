@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import TextInput from '../component/TextInput';
 import LoadingOverlay from '../component/LoadingOverlay';
@@ -20,6 +20,13 @@ export default function Register() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Show pop-up log for error
+  useEffect(() => {
+    if (error) {
+      window.alert(error); // Replace with a toast library for production
+    }
+  }, [error]);
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));

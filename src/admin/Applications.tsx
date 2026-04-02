@@ -93,7 +93,7 @@ export default function Applications() {
     listAdminSuppliers()
       .then((data) => {
         setSuppliers(data);
-        if (data.length > 0) setSelectedSupplierId(data[0].id);
+        // Do not auto-select a supplier; default is all applications
       })
       .catch((err) => alert(err.message || 'Failed to fetch suppliers'))
       .finally(() => setLoadingSuppliers(false));
@@ -103,7 +103,7 @@ export default function Applications() {
   useEffect(() => {
     setLoading(true);
     getAllApplications({
-      supplierId: selectedSupplierId || undefined,
+      supplierId: selectedSupplierId ? selectedSupplierId : undefined,
       status: statusFilter !== 'all' ? statusFilter : undefined,
       search: searchTerm || undefined,
       page,
@@ -242,6 +242,21 @@ export default function Applications() {
               className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
+          {/* Supplier Filter Dropdown */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="supplierFilter" className="text-sm text-gray-600 hidden sm:block">Supplier:</label>
+            <select
+              id="supplierFilter"
+              value={selectedSupplierId}
+              onChange={e => setSelectedSupplierId(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option value="">All Suppliers</option>
+              {suppliers.map(sup => (
+                <option key={sup.id} value={sup.id}>{sup.companyName}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-center gap-2">
             <FunnelIcon className="w-5 h-5 text-gray-400" />
             <select
@@ -325,7 +340,7 @@ export default function Applications() {
             </tbody>
           </table>
         </div>
-        {filteredApplications.length === 0 && !loading && selectedSupplierId && (
+        {filteredApplications.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500">No applications found</p>
           </div>
