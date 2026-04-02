@@ -132,7 +132,7 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
                   const url = window.URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = `merged_documents_${application.id}.pdf`;
+                  a.download = `application_${application.id}.pdf`;
                   document.body.appendChild(a);
                   a.click();
                   a.remove();
@@ -142,44 +142,6 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
                 }
               }}
               className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Download Merged PDF
-            </button>
-            <button
-              onClick={onDownloadPdf || (() => {
-                if (!application) return;
-                const doc = new jsPDF();
-                doc.setFontSize(18);
-                doc.text('Supplier Application', 14, 18);
-                doc.setFontSize(12);
-                // Header section with all supplier details
-                doc.text(`Company Name: ${supplier?.companyName || ''}`, 14, 28);
-                doc.text(`Email: ${supplier?.email || ''}`, 14, 36);
-                doc.text(`Address: ${supplier?.address || ''}`, 14, 44);
-                doc.text(`Phone: ${supplier?.phone || ''}`, 14, 52);
-                doc.text(`Contact Person: ${supplier?.contactPerson || ''}`, 14, 60);
-                doc.text(`Contact Email: ${supplier?.contactEmail || ''}`, 14, 68);
-                doc.text(`Contact Phone: ${supplier?.contactPhone || ''}`, 14, 76);
-                doc.text(`Created: ${supplier?.createdAt ? supplier.createdAt.split('T')[0] : ''}`, 14, 84);
-                // Application section
-                let y = 94;
-                doc.text(`Category: ${application.category?.name || ''}`, 14, y);
-                y += 8;
-                doc.text(`Status: ${statusLabels[application.status as keyof typeof statusLabels] || application.status}`, 14, y);
-                y += 8;
-                doc.text(`Application Fee: ${application.category?.applicationFee || ''}`, 14, y);
-                y += 8;
-                doc.text(`Submitted: ${application.submittedAt ? application.submittedAt.split('T')[0] : ''}`, 14, y);
-                // Documents table
-                y += 8;
-                autoTable(doc, {
-                  startY: y,
-                  head: [['File Name', 'File Path']],
-                  body: application.documents.map(docu => [docu.fileName, docu.filePath]),
-                });
-                doc.save(`application_${application.id}.pdf`);
-              })}
-              className="px-4 py-2 text-sm font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             >
               Download Application PDF
             </button>
