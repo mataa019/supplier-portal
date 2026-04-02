@@ -99,10 +99,8 @@ export default function Categories() {
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCategories.map((category) => {
-          // Try to pick an icon based on name or fallback
           let iconKey = category.name.toLowerCase().split(' ')[0];
           let Icon = iconMap[iconKey] || BuildingOfficeIcon;
-          // Parse requirements (API returns as comma-separated string)
           const requirements = category.Requirements.split(',').map(r => r.trim());
           return (
             <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">

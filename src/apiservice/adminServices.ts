@@ -1,3 +1,4 @@
+
 import type { SupplierApplication } from './adminModels';
 
 
@@ -263,4 +264,16 @@ export async function withdrawApplication(applicationId: string, remarks: string
     const data = await res.json();
     console.log('Withdrawn application:', data);
     return data;
+}
+// Download a document for an application (admin)
+export async function downloadAdminApplicationDocument(applicationId: string, documentId: string): Promise<Blob> {
+    const response = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/documents/${documentId}/download`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to download document');
+    }
+    return response.blob();
 }

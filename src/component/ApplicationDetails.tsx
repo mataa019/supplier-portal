@@ -86,23 +86,14 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
                   <CheckCircleSolid className="w-4 h-4 text-green-600" />
                   {doc.fileName} <span className="text-xs text-gray-400">({doc.type})</span>
                   {doc.url && (
-                    <>
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 text-blue-600 underline text-xs hover:text-blue-800"
-                      >
-                        Download
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => window.open(doc.url, '_blank', 'noopener,noreferrer')}
-                        className="ml-2 text-green-600 underline text-xs hover:text-green-800"
-                      >
-                        Preview
-                      </button>
-                    </>
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-600 underline text-xs hover:text-blue-800"
+                    >
+                      Download
+                    </a>
                   )}
                 </li>
               ))}

@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import type { SupplierApplication, AdminSupplier } from '../../apiservice/adminModels';
+import { downloadAdminApplicationDocument } from '../../apiservice/adminServices';
 
 interface ApplicationDetailsModalProps {
   open: boolean;
@@ -84,7 +85,26 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-green-600">Uploaded</span>
-                    <a href={doc.filePath} target="_blank" rel="noopener noreferrer" className="text-xs text-red-600 hover:text-red-700">View</a>
+                    <button
+                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                      onClick={async () => {
+                        try {
+                          const blob = await downloadAdminApplicationDocument(application.id, doc.id);
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = doc.fileName || 'document';
+                          document.body.appendChild(a);
+                          a.click();
+                          a.remove();
+                          window.URL.revokeObjectURL(url);
+                        } catch (err) {
+                          alert('Failed to download document');
+                        }
+                      }}
+                    >
+                      Download
+                    </button>
                   </div>
                 </div>
               ))}
@@ -111,17 +131,34 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
                 doc.setFontSize(18);
                 doc.text('Supplier Application', 14, 18);
                 doc.setFontSize(12);
-                doc.text(`Application ID: ${application.id}`, 14, 28);
-                doc.text(`Supplier: ${supplier?.companyName || application.supplierId}`, 14, 36);
-                doc.text(`Category: ${application.category?.name || ''}`, 14, 44);
-                doc.text(`Status: ${statusLabels[application.status as keyof typeof statusLabels] || application.status}`, 14, 52);
-                doc.text(`Application Fee: ${application.category?.applicationFee || ''}`, 14, 60);
-                doc.text(`Submitted: ${application.submittedAt ? application.submittedAt.split('T')[0] : ''}`, 14, 68);
+                // Header section
+                doc.text(`Company Name: ${supplier?.companyName || ''}`, 14, 28);
+                doc.text(`Email: ${supplier?.email || ''}`, 14, 36);
+                doc.text(`Address: ${supplier?.address || ''}`, 14, 44);
+                doc.text(`Created: ${supplier?.createdAt ? supplier.createdAt.split('T')[0] : ''}`, 14, 52);
+                // Application section
+                let y = 62;
+                doc.text(`Category: ${application.category?.name || ''}`, 14, y);
+                y += 8;
+                doc.text(`Status: ${statusLabels[application.status as keyof typeof statusLabels] || application.status}`, 14, y);
+                y += 8;
+                doc.text(`Application Fee: ${application.category?.applicationFee || ''}`, 14, y);
+                y += 8;
+                doc.text(`Submitted: ${application.submittedAt ? application.submittedAt.split('T')[0] : ''}`, 14, y);
+                // Documents table
+                y += 8;
                 autoTable(doc, {
-                  startY: 76,
+                  startY: y,
                   head: [['File Name', 'File Path']],
                   body: application.documents.map(docu => [docu.fileName, docu.filePath]),
                 });
+                // Payment section (after table)
+                let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : y + 30;
+                doc.setFontSize(14);
+                doc.text('Payment Details', 14, finalY);
+                doc.setFontSize(12);
+                doc.text(`Amount Paid: ${application.category?.applicationFee || ''}`, 14, finalY + 8);
+                doc.text(`Payment Status: ${statusLabels[application.status as keyof typeof statusLabels] || application.status}`, 14, finalY + 16);
                 doc.save(`application_${application.id}.pdf`);
               })}
               className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
