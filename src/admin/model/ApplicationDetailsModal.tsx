@@ -151,14 +151,7 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
                   head: [['File Name', 'File Path']],
                   body: application.documents.map(docu => [docu.fileName, docu.filePath]),
                 });
-                // Payment section (after table)
-                // let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : y + 30;
-                // doc.setFontSize(14);
-                // doc.text('Payment Details', 14, finalY);
-                // doc.setFontSize(12);
-                // doc.text(`Amount Paid: ${application.category?.applicationFee || ''}`, 14, finalY + 8);
-                // doc.text(`Payment Status: ${statusLabels[application.status as keyof typeof statusLabels] || application.status}`, 14, finalY + 16);
-                // doc.save(`application_${application.id}.pdf`);
+                doc.save(`application_${application.id}.pdf`);
               })}
               className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
