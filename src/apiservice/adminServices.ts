@@ -1,15 +1,3 @@
-// Download merged documents for an application (admin)
-export async function downloadMergedApplicationDocuments(applicationId: string): Promise<Blob> {
-    const response = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/merge-documents`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to download merged document');
-    }
-    return response.blob();
-}
 
 import type { SupplierApplication } from './adminModels';
 
@@ -286,6 +274,18 @@ export async function downloadAdminApplicationDocument(applicationId: string, do
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to download document');
+    }
+    return response.blob();
+}
+// Download merged documents for an application (admin)
+export async function downloadMergedApplicationDocuments(applicationId: string): Promise<Blob> {
+    const response = await fetch(`${API_BASE_URL}/admin/applications/${applicationId}/merge-documents`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to download merged document');
     }
     return response.blob();
 }
