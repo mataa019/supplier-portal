@@ -104,54 +104,51 @@ export default function Documents() {
     }
     setUploading(true);
     try {
-      const documentIds = Object.values(uploadedFiles)
-        .filter((file: any) => file && file.id)
-        .map((file: any) => file.id);
+      // Collect files and document meta
+      const files: File[] = [];
+      const documents: { type: string; description: string }[] = [];
+      documentTypes.forEach(doc => {
+        const uploaded = uploadedFiles[doc.id];
+        if (uploaded) {
+          files.push(uploaded.file);
+          documents.push({ type: doc.id, description: doc.label });
+          setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
+        }
+      });
 
-      if (applicationId) {
-        await updateApplication(applicationId, categoryId, documentIds);
-        await submitApplication(applicationId, { declarationAccepted: true });
-        setUploading(false);
-        alert('Application updated and submitted!');
-        navigate('/dashboard/applications');
-        return;
-      } else {
+      let appId = applicationId;
+      if (!appId) {
+        // Create new application if not exists
         const app = await createApplication({ categoryId });
-        const files: File[] = [];
-        const documents: { type: string; description: string }[] = [];
-        documentTypes.forEach(doc => {
-          const uploaded = uploadedFiles[doc.id];
-          if (uploaded) {
-            files.push(uploaded.file);
-            documents.push({ type: doc.id, description: doc.label });
-            setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
-          }
-        });
-        if (files.length > 0) {
-          try {
-            await uploadApplicationDocument({ applicationId: app.id, files, documents });
-            documentTypes.forEach(doc => {
-              if (uploadedFiles[doc.id]) {
-                setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
-              }
-            });
-            setTimeout(() => {
-              setUploading(false);
-              setShowSubmit(true);
-              setCreatedAppId(app.id);
-            }, 2500);
-          } catch (err) {
-            documentTypes.forEach(doc => {
-              if (uploadedFiles[doc.id]) {
-                setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
-              }
-            });
-            setTimeout(() => setUploading(false), 2500);
-          }
-        } else {
-          alert('No documents to upload.');
+        appId = app.id;
+        setCreatedAppId(app.id);
+      }
+
+      // Always upload files if present
+      if (files.length > 0 && appId) {
+        try {
+          await uploadApplicationDocument({ applicationId: appId, files, documents });
+          documentTypes.forEach(doc => {
+            if (uploadedFiles[doc.id]) {
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
+            }
+          });
+          setTimeout(() => {
+            setUploading(false);
+            setShowSubmit(true);
+            setCreatedAppId(appId!);
+          }, 2500);
+        } catch (err) {
+          documentTypes.forEach(doc => {
+            if (uploadedFiles[doc.id]) {
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
+            }
+          });
           setTimeout(() => setUploading(false), 2500);
         }
+      } else {
+        alert('No documents to upload.');
+        setTimeout(() => setUploading(false), 2500);
       }
     } catch (err: any) {
       setUploading(false);

@@ -107,7 +107,6 @@ const statusIcons = {
       const updated = await withdrawApplication(selectedApp.id, { reason: withdrawReason });
       setSelectedApp(updated);
       setWithdrawSuccess(true);
-      // Modal will show success message, then close after a short delay
       setTimeout(() => {
         setShowWithdrawModal(false);
         setWithdrawSuccess(false);
