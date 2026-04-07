@@ -127,3 +127,9 @@ export interface AdminAccount {
     createdAt: string;
     updatedAt: string;
 }
+export interface CreateAccountPayload {
+    email: string;
+    password: string;
+    role: string;
+    status: string;
+}

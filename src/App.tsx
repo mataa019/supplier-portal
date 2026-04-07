@@ -20,7 +20,6 @@ import AdminSuppliers from './admin/Suppliers'
 import AdminApplications from './admin/Applications'
 import AdminPayments from './admin/Payments'
 import AdminCategories from './admin/Categories'
-import AdminUsers from './admin/Users'
 import AdminAuditLog from './admin/AuditLog'
 import ProfilePage from './dashboard/profile';
 

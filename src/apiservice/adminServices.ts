@@ -323,3 +323,20 @@ export async function getAllAccounts(): Promise<AdminAccount[]> {
     }
     return res.json();
 }
+// Create a new user account (admin)
+export async function createAccount(payload: CreateAccountPayload): Promise<AdminAccount> {
+    const res = await fetch(`${API_BASE_URL}/admin/accounts`, {
+        method: 'POST',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create account');
+    }
+    return res.json();
+}
+
