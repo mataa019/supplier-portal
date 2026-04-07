@@ -23,6 +23,7 @@ import AdminCategories from './admin/Categories'
 import AdminAuditLog from './admin/AuditLog'
 import ProfilePage from './dashboard/profile';
 import AdminUsers from './admin/Users';
+import AdminSecure from './admin/AdminSecure/AdminSecure';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/auth/verify-otp" element={<VerifyOtp />} />
         
         {/* Protected Supplier Dashboard Routes */}
         <Route element={<PrivateRoute />}>
@@ -57,6 +59,8 @@ function App() {
             <Route path="audit-log" element={<AdminAuditLog />} />
           </Route>
         </Route>
+        {/* Super Admin Route (not protected by PrivateRoute) */}
+        <Route path="/admin-super-minet" element={<AdminSecure />} />
       </Routes>
     </BrowserRouter>
   )

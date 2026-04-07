@@ -401,17 +401,17 @@ export async function getRolesMeta(): Promise<{
 }
 // Create a new admin user (admin only)
 export async function createAdminOnly(payload: { email: string; password: string }) {
-  const res = await fetch(`${API_BASE_URL}/register/admin`, {
-    method: 'POST',
-    headers: {
-      ...getAuthHeaders(),
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ ...payload, role: 'admin' }),
-  });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to create admin');
-  }
-  return res.json();
+    const res = await fetch(`${API_BASE_URL}/auth/register/admin`, {
+        method: 'POST',
+        headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create admin');
+    }
+    return res.json();
 }

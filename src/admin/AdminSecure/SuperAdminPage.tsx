@@ -1,7 +1,9 @@
 import { useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
-import { createAccount } from '../../apiservice/adminServices';
 import { Modal } from 'antd';
+import { createAdminOnly } from '../../apiservice/adminServices';
+
 
 const SuperAdminPage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -9,8 +11,6 @@ const SuperAdminPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    role: 'admin',
-    status: 'active',
   });
   const [loading, setLoading] = useState(false);
 
@@ -21,11 +21,17 @@ const SuperAdminPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await createAccount(formData);
-      setShowModal(false);
-      setFormData({ email: '', password: '', role: 'admin', status: 'active' });
-      // Redirect to OTP verification page with email
-      navigate('/auth/verify-otp', { state: { email: formData.email } });
+      const res = await createAdminOnly({ email: formData.email, password: formData.password });
+      // Show feedback from backend response
+      if (res && (res.message || res.success || res.id || res.email)) {
+        alert(res.message || 'Admin created successfully. Please verify OTP sent to the email.');
+        setShowModal(false);
+        setFormData({ email: '', password: '' });
+        // Redirect to OTP verification page with email
+        navigate('/auth/verify-otp', { state: { email: formData.email } });
+      } else {
+        alert('Admin creation failed. Please try again.');
+      }
     } catch (err: any) {
       alert(err.message || 'Failed to create admin');
     } finally {
