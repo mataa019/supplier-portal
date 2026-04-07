@@ -17,6 +17,7 @@ const menuItems = [
   { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
   { path: '/admin/categories', label: 'Categories', icon: FolderIcon },
   { path: '/admin/users', label: 'Users', icon: UserGroupIcon },
+  { path: '/admin/audit-log', label: 'Audit Log', icon: Cog6ToothIcon },
 ];
 
 interface AdminSidebarProps {

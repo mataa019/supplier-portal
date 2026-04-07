@@ -21,6 +21,7 @@ import AdminApplications from './admin/Applications'
 import AdminPayments from './admin/Payments'
 import AdminCategories from './admin/Categories'
 import AdminUsers from './admin/Users'
+import AdminAuditLog from './admin/AuditLog'
 import ProfilePage from './dashboard/profile';
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
             <Route path="payments" element={<AdminPayments />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="audit-log" element={<AdminAuditLog />} />
           </Route>
         </Route>
       </Routes>

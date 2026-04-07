@@ -1,3 +1,47 @@
+// Audit Log API
+export interface AuditLog {
+    id: string;
+    userId: string | null;
+    action: string;
+    entity: string;
+    entityId: string | null;
+    details: any;
+    ipAddress: string | null;
+    createdAt: string;
+    user?: {
+        id: string;
+        email: string;
+        role: string;
+    } | null;
+}
+
+export interface AuditLogMeta {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export interface AuditLogResponse {
+    data: AuditLog[];
+    meta: AuditLogMeta;
+}
+
+export async function getAuditLogs(params: { page?: number; limit?: number } = {}): Promise<AuditLogResponse> {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.append('page', String(params.page));
+    if (params.limit) searchParams.append('limit', String(params.limit));
+    const query = searchParams.toString() ? `?${searchParams}` : '';
+    const res = await fetch(`${API_BASE_URL}/audit${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch audit logs');
+    }
+    return res.json();
+}
 
 import type { SupplierApplication } from './adminModels';
 
