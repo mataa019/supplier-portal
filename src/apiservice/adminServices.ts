@@ -311,9 +311,6 @@ export async function getAuditLogById(id: string): Promise<AuditLog> {
     }
     return res.json();
 }
-// User Account type for /admin/accounts
-
-
 // Get all user accounts (admin)
 export async function getAllAccounts(): Promise<AdminAccount[]> {
     const res = await fetch(`${API_BASE_URL}/admin/accounts`, {
