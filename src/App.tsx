@@ -22,6 +22,7 @@ import AdminPayments from './admin/Payments'
 import AdminCategories from './admin/Categories'
 import AdminAuditLog from './admin/AuditLog'
 import ProfilePage from './dashboard/profile';
+import AdminUsers from './admin/Users';
 
 function App() {
   return (

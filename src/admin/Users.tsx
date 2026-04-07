@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getAllAccounts, AdminAccount, createAccount, getAccountById } from '../apiservice/adminServices';
+import { getAllAccounts, createAccount, getAccountById } from '../apiservice/adminServices';
+import type { AdminAccount } from '../apiservice/adminModels';
 
 import { Modal } from 'antd';
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -28,6 +29,9 @@ import {
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import LoadingOverlay from '../component/LoadingOverlay';
+
+
+const AdminUsers = () => {
 
 type User = AdminAccount & {
   name?: string; // for compatibility with form, but not used from backend
@@ -71,7 +75,7 @@ const rolePermissions = {
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
@@ -318,7 +322,7 @@ const rolePermissions = {
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{user.department}</td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${roleColors[user.role]}`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${roleColors[user.role as keyof typeof roleColors]}`}>
                       {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </span>
                   </td>
@@ -326,7 +330,7 @@ const rolePermissions = {
                   <td className="px-4 py-4">
                     <button
                       onClick={() => handleToggleStatus(user.id)}
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[user.status]}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[user.status as keyof typeof statusColors]}`}
                     >
                       {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                     </button>
@@ -474,3 +478,4 @@ const rolePermissions = {
     </div>
   );
 }
+export default AdminUsers;
