@@ -82,3 +82,30 @@ export interface AdminSupplier {
   categories: string[]; // <-- Add this line
 
 }
+export interface AuditLog {
+    id: string;
+    userId: string | null;
+    action: string;
+    entity: string;
+    entityId: string | null;
+    details: any;
+    ipAddress: string | null;
+    createdAt: string;
+    user?: {
+        id: string;
+        email: string;
+        role: string;
+    } | null;
+}
+
+export interface AuditLogMeta {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export interface AuditLogResponse {
+    data: AuditLog[];
+    meta: AuditLogMeta;
+}
