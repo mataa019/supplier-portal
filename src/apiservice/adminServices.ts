@@ -1,5 +1,4 @@
 
-
 import type { AdminAccount, ApplicationFilters, AuditLog, AuditLogResponse, CreateAccountPayload, SupplierApplication } from './adminModels';
 
 
@@ -384,4 +383,20 @@ export async function deleteAccount(id: string): Promise<void> {
     }
 }
 
+// Get roles meta (all, assignable, non-assignable)
+export async function getRolesMeta(): Promise<{
+    allRoles: string[];
+    assignableRoles: string[];
+    nonAssignableRoles: string[];
+}> {
+    const res = await fetch(`${API_BASE_URL}/admin/accounts/meta/roles`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch roles meta');
+    }
+    return res.json();
+}
 
