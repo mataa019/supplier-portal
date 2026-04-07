@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllAccounts, createAccount, getAccountById } from '../apiservice/adminServices';
+import { getAllAccounts, createAccount, getAccountById, updateAccount } from '../apiservice/adminServices';
 import { getAuditLogs } from '../apiservice/adminServices';
 import type { AdminAccount } from '../apiservice/adminModels';
 
@@ -162,28 +162,36 @@ const rolePermissions = {
     );
   };
 
-  // Add user via backend
+  // Add or update user via backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     if (editingUser) {
-      // Optionally implement backend update here
-      setUsers(
-        users.map((u) =>
-          u.id === editingUser.id
-            ? {
-                ...u,
-                name: formData.name,
-                email: formData.email,
-                role: formData.role,
-                department: formData.department,
-                status: formData.status,
-              }
-            : u
-        )
-      );
-      setLoading(false);
-      setShowModal(false);
+      try {
+        const updated = await updateAccount(editingUser.id, {
+          email: formData.email,
+          password: formData.password || undefined,
+          role: formData.role,
+          status: formData.status,
+        });
+        setUsers(
+          users.map((u) =>
+            u.id === editingUser.id
+              ? {
+                  ...u,
+                  ...updated,
+                  name: formData.name,
+                  department: formData.department,
+                }
+              : u
+          )
+        );
+        setShowModal(false);
+      } catch (err: any) {
+        alert(err.message || 'Failed to update user');
+      } finally {
+        setLoading(false);
+      }
     } else {
       try {
         const newAccount = await createAccount({
