@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllAccounts, createAccount, getAccountById, updateAccount, deleteAccount } from '../apiservice/adminServices';
+import { getAllAccounts, createAccount, getAccountById, updateAccount, deleteAccount, getRolesMeta } from '../apiservice/adminServices';
 import { getAuditLogs } from '../apiservice/adminServices';
 import type { AdminAccount } from '../apiservice/adminModels';
 
@@ -58,6 +58,7 @@ const rolePermissions = {
 };
 
   const [users, setUsers] = useState<User[]>([]);
+  const [roleOptions, setRoleOptions] = useState<string[]>(['admin', 'manager', 'viewer']);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
@@ -80,14 +81,16 @@ const rolePermissions = {
     return matchesSearch && matchesRole;
   });
 
-  // Load users and last login from backend
+  // Load users, last login, and roles from backend
   useEffect(() => {
     setLoading(true);
     Promise.all([
       getAllAccounts(),
-      getAuditLogs({ limit: 1000 })
+      getAuditLogs({ limit: 1000 }),
+      getRolesMeta()
     ])
-      .then(([accounts, auditLogResp]) => {
+      .then(([accounts, auditLogResp, rolesMeta]) => {
+        setRoleOptions(rolesMeta.assignableRoles);
         const loginMap = new Map<string, string>();
         auditLogResp.data.forEach((log: any) => {
           if (typeof log.action === 'string' && log.action.toLowerCase() === 'login' && log.userId) {
@@ -97,10 +100,9 @@ const rolePermissions = {
             }
           }
         });
-
         setUsers(
           accounts
-            .filter((u) => u.role === 'admin' || u.role === 'manager' || u.role === 'viewer')
+            .filter((u) => rolesMeta.allRoles.includes(u.role))
             .map((u) => ({
               ...u,
               name: u.email.split('@')[0],
@@ -473,12 +475,12 @@ const rolePermissions = {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'manager' | 'viewer' })}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="viewer">Viewer</option>
+                  {roleOptions.map((role) => (
+                    <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
+                  ))}
                 </select>
                 {/* Role Permissions */}
                 <div className="mt-2 p-2 bg-gray-50 rounded-lg">
