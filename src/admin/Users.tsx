@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getAllAccounts, AdminAccount } from '../apiservice/adminServices';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -10,69 +11,13 @@ import {
 } from '@heroicons/react/24/outline';
 import LoadingOverlay from '../component/LoadingOverlay';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'manager' | 'viewer';
-  department: string;
-  status: 'active' | 'inactive';
-  lastLogin: string;
-  createdAt: string;
-}
+type User = AdminAccount & {
+  name?: string; // for compatibility with form, but not used from backend
+  department?: string; // not in backend, so will be blank
+  lastLogin?: string; // not in backend, so will be blank
+};
 
-const mockUsers: User[] = [
-  {
-    id: 'USR-001',
-    name: 'John Banda',
-    email: 'john.banda@minet.com',
-    role: 'admin',
-    department: 'IT Department',
-    status: 'active',
-    lastLogin: '2026-03-09 14:30',
-    createdAt: '2024-01-01',
-  },
-  {
-    id: 'USR-002',
-    name: 'Mary Phiri',
-    email: 'mary.phiri@minet.com',
-    role: 'manager',
-    department: 'Procurement',
-    status: 'active',
-    lastLogin: '2026-03-09 10:15',
-    createdAt: '2024-02-15',
-  },
-  {
-    id: 'USR-003',
-    name: 'James Mwanza',
-    email: 'james.mwanza@minet.com',
-    role: 'viewer',
-    department: 'Finance',
-    status: 'active',
-    lastLogin: '2026-03-08 16:45',
-    createdAt: '2024-03-01',
-  },
-  {
-    id: 'USR-004',
-    name: 'Grace Tembo',
-    email: 'grace.tembo@minet.com',
-    role: 'manager',
-    department: 'Operations',
-    status: 'inactive',
-    lastLogin: '2026-02-20 09:00',
-    createdAt: '2024-03-15',
-  },
-  {
-    id: 'USR-005',
-    name: 'Peter Zulu',
-    email: 'peter.zulu@minet.com',
-    role: 'viewer',
-    department: 'Procurement',
-    status: 'active',
-    lastLogin: '2026-03-09 11:30',
-    createdAt: '2024-04-01',
-  },
-];
+
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -91,8 +36,7 @@ const rolePermissions = {
   viewer: ['View dashboards', 'View suppliers', 'View applications'],
 };
 
-export default function Users() {
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
@@ -115,20 +59,33 @@ export default function Users() {
     return matchesSearch && matchesRole;
   });
 
-  // Simulate loading users from API with minimum duration
+  // Load users from backend
   useEffect(() => {
     setLoading(true);
     const minDuration = 2300;
     const start = Date.now();
-    setTimeout(() => {
-      const elapsed = Date.now() - start;
-      const remaining = minDuration - elapsed;
-      if (remaining > 0) {
-        setTimeout(() => setLoading(false), remaining);
-      } else {
-        setLoading(false);
-      }
-    }, 500); // Simulate API call
+    getAllAccounts()
+      .then((data) => {
+        // Map backend data to UI User type
+        setUsers(
+          data.map((u) => ({
+            ...u,
+            name: u.email.split('@')[0], // fallback, since backend has no name
+            department: '', // not available
+            lastLogin: '', // not available
+          }))
+        );
+      })
+      .catch(() => setUsers([]))
+      .finally(() => {
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      });
   }, []);
 
   const handleAdd = () => {
@@ -147,16 +104,17 @@ export default function Users() {
   const handleEdit = (user: User) => {
     setEditingUser(user);
     setFormData({
-      name: user.name,
+      name: user.name || '',
       email: user.email,
-      role: user.role,
-      department: user.department,
-      status: user.status,
+      role: user.role as 'admin' | 'manager' | 'viewer',
+      department: user.department || '',
+      status: user.status as 'active' | 'inactive',
       password: '',
     });
     setShowModal(true);
   };
 
+  // Optionally, implement backend delete here
   const handleDelete = (id: string) => {
     const user = users.find((u) => u.id === id);
     if (user?.role === 'admin' && users.filter((u) => u.role === 'admin').length === 1) {
@@ -168,6 +126,7 @@ export default function Users() {
     }
   };
 
+  // Optionally, implement backend status toggle here
   const handleToggleStatus = (id: string) => {
     setUsers(
       users.map((u) =>
@@ -176,6 +135,7 @@ export default function Users() {
     );
   };
 
+  // Optionally, implement backend add/edit here
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingUser) {
