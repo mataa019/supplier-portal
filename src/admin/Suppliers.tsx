@@ -249,7 +249,7 @@ export default function Suppliers() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.email}</p>
+                  <p className="text-sm font-medium text-gray-900 break-all">{selectedSupplier.email}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Phone</p>
@@ -278,9 +278,7 @@ export default function Suppliers() {
               >
                 Close
               </button>
-              <button className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700">
-                Edit Supplier
-              </button>
+              
             </div>
           </div>
         </div>

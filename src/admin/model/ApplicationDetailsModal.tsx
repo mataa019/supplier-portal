@@ -1,6 +1,4 @@
 import React from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import type { SupplierApplication, AdminSupplier } from '../../apiservice/adminModels';
 import { downloadAdminApplicationDocument, downloadMergedApplicationDocuments } from '../../apiservice/adminServices';
@@ -24,7 +22,6 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
   onClose,
   onApprove,
   onReject,
-  onDownloadPdf,
   statusColors,
   statusLabels,
 }) => {
