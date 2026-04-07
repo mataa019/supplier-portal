@@ -102,7 +102,7 @@ const rolePermissions = {
         });
         setUsers(
           accounts
-            .filter((u) => rolesMeta.allRoles.includes(u.role))
+            .filter((u) => rolesMeta.allRoles.includes(u.role) && u.role !== 'supplier')
             .map((u) => ({
               ...u,
               name: u.email.split('@')[0],
