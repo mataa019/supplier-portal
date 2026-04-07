@@ -319,9 +319,16 @@ export async function getAllAccounts(): Promise<AdminAccount[]> {
     });
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        console.error(' Error response:', errorData);
+        if (typeof window !== 'undefined' && window.alert) {
+            window.alert(errorData.message || 'Failed to fetch accounts');
+        }
         throw new Error(errorData.message || 'Failed to fetch accounts');
     }
-    return res.json();
+    const data = await res.json();
+    console.log('[getAllAccounts] Success:', data);
+    // Optionally, show feedback to the user (if you have a notification system, e.g., toast)
+    return data;
 }
 // Create a new user account (admin)
 export async function createAccount(payload: CreateAccountPayload): Promise<AdminAccount> {
@@ -337,7 +344,9 @@ export async function createAccount(payload: CreateAccountPayload): Promise<Admi
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to create account');
     }
-    return res.json();
+    const data = await res.json();
+    console.log('Created account:', data);
+    return data;
 }
 // Get a single user account by ID (admin)
 export async function getAccountById(id: string): Promise<AdminAccount> {
@@ -349,7 +358,10 @@ export async function getAccountById(id: string): Promise<AdminAccount> {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch account');
     }
-    return res.json();
+    const data = await res.json();
+    console.log('Fetched account:', data);
+    return data;
 }
+
 
 

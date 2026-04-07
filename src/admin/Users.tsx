@@ -3,6 +3,17 @@ import { getAllAccounts, createAccount, getAccountById } from '../apiservice/adm
 import type { AdminAccount } from '../apiservice/adminModels';
 
 import { Modal } from 'antd';
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
+  UserCircleIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/outline';
+
+const AdminUsers = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<AdminAccount | null>(null);
@@ -19,19 +30,6 @@ import { Modal } from 'antd';
       setDetailLoading(false);
     }
   };
-import {
-  MagnifyingGlassIcon,
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  XMarkIcon,
-  UserCircleIcon,
-  ShieldCheckIcon,
-} from '@heroicons/react/24/outline';
-import LoadingOverlay from '../component/LoadingOverlay';
-
-
-const AdminUsers = () => {
 
 type User = AdminAccount & {
   name?: string; // for compatibility with form, but not used from backend
