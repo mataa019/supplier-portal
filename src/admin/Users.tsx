@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllAccounts, createAccount, getAccountById, updateAccount } from '../apiservice/adminServices';
+import { getAllAccounts, createAccount, getAccountById, updateAccount, deleteAccount } from '../apiservice/adminServices';
 import { getAuditLogs } from '../apiservice/adminServices';
 import type { AdminAccount } from '../apiservice/adminModels';
 
@@ -141,15 +141,23 @@ const rolePermissions = {
     setShowModal(true);
   };
 
-  // Optionally, implement backend delete here
-  const handleDelete = (id: string) => {
+  // Delete user via backend
+  const handleDelete = async (id: string) => {
     const user = users.find((u) => u.id === id);
     if (user?.role === 'admin' && users.filter((u) => u.role === 'admin').length === 1) {
       alert('Cannot delete the last admin user.');
       return;
     }
     if (confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter((u) => u.id !== id));
+      setLoading(true);
+      try {
+        await deleteAccount(id);
+        setUsers(users.filter((u) => u.id !== id));
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete user');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

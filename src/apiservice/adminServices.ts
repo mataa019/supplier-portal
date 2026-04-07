@@ -372,4 +372,16 @@ export async function updateAccount(id: string, data: { email: string; password?
   if (!res.ok) throw new Error('Failed to update account');
   return res.json();
 }
+// Delete a user account (admin)
+export async function deleteAccount(id: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/admin/accounts/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete account');
+    }
+}
+
 
