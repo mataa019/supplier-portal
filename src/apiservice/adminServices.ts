@@ -326,8 +326,7 @@ export async function getAllAccounts(): Promise<AdminAccount[]> {
         throw new Error(errorData.message || 'Failed to fetch accounts');
     }
     const data = await res.json();
-    console.log('[getAllAccounts] Success:', data);
-    // Optionally, show feedback to the user (if you have a notification system, e.g., toast)
+    console.log(' Success:', data);
     return data;
 }
 // Create a new user account (admin)

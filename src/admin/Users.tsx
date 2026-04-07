@@ -267,101 +267,140 @@ const rolePermissions = {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
-                <th className="px-4 py-3 text-left">User</th>
-                <th className="px-4 py-3 text-left hidden md:table-cell">Department</th>
-                <th className="px-4 py-3 text-left">Role</th>
-                <th className="px-4 py-3 text-left hidden lg:table-cell">Last Login</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewAccount(user.id)}>
-                        {/* Account Detail Modal */}
-                        <Modal
-                          open={detailModalOpen}
-                          onCancel={() => { setDetailModalOpen(false); setSelectedAccount(null); }}
-                          title="Account Details"
-                          footer={null}
-                          width={400}
-                        >
-                          {detailLoading ? (
-                            <div className="flex justify-center items-center py-8">Loading...</div>
-                          ) : selectedAccount ? (
-                            <div className="space-y-2">
-                              <div><span className="font-semibold">ID:</span> {selectedAccount.id}</div>
-                              <div><span className="font-semibold">Email:</span> {selectedAccount.email}</div>
-                              <div><span className="font-semibold">Role:</span> {selectedAccount.role}</div>
-                              <div><span className="font-semibold">Status:</span> {selectedAccount.status}</div>
-                              <div><span className="font-semibold">Email Verified:</span> {selectedAccount.emailVerified ? 'Yes' : 'No'}</div>
-                              <div><span className="font-semibold">Created At:</span> {new Date(selectedAccount.createdAt).toLocaleString()}</div>
-                              <div><span className="font-semibold">Updated At:</span> {new Date(selectedAccount.updatedAt).toLocaleString()}</div>
-                            </div>
-                          ) : (
-                            <div className="text-center text-gray-500">Failed to load account details.</div>
-                          )}
-                        </Modal>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <UserCircleIcon className="w-6 h-6 text-gray-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{user.department}</td>
-                  <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${roleColors[user.role as keyof typeof roleColors]}`}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-gray-500 hidden lg:table-cell">{user.lastLogin}</td>
-                  <td className="px-4 py-4">
-                    <button
-                      onClick={() => handleToggleStatus(user.id)}
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[user.status as keyof typeof statusColors]}`}
-                    >
-                      {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                    </button>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
-                        title="Edit"
-                      >
-                        <PencilIcon className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                        title="Delete"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No users found</p>
-          </div>
+       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+     <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+        <tr>
+          <th className="px-4 py-3 text-left">User</th>
+          <th className="px-4 py-3 text-left">Role</th>
+          <th className="px-4 py-3 text-left hidden lg:table-cell">Last Login</th>
+          <th className="px-4 py-3 text-left">Status</th>
+          <th className="px-4 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody className="divide-y divide-gray-200">
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((user) => (
+            <tr key={user.id} className="hover:bg-gray-50">
+              <td className="px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <UserCircleIcon className="w-6 h-6 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="px-4 py-4">
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    roleColors[user.role as keyof typeof roleColors]
+                  }`}
+                >
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </span>
+              </td>
+
+              <td className="px-4 py-4 text-sm text-gray-500 hidden lg:table-cell">
+                {user.lastLogin || '-'}
+              </td>
+
+              <td className="px-4 py-4">
+                <button
+                  onClick={() => handleToggleStatus(user.id)}
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    statusColors[user.status as keyof typeof statusColors]
+                  }`}
+                >
+                  {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                </button>
+              </td>
+
+              <td className="px-4 py-4">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => handleViewAccount(user.id)}
+                    className="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded"
+                  >
+                    View
+                  </button>
+
+                  <button
+                    onClick={() => handleEdit(user)}
+                    className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan={6} className="text-center py-12 text-gray-500">
+              No users found
+            </td>
+          </tr>
         )}
-      </div>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{/* Modal OUTSIDE the table */}
+<Modal
+  open={detailModalOpen}
+  onCancel={() => {
+    setDetailModalOpen(false);
+    setSelectedAccount(null);
+  }}
+  title="Account Details"
+  footer={null}
+  width={420}
+>
+  {detailLoading ? (
+    <div className="flex justify-center items-center py-8">
+      Loading...
+    </div>
+  ) : selectedAccount ? (
+    <div className="space-y-2 text-sm">
+      <div><span className="font-semibold">ID:</span> {selectedAccount.id}</div>
+      <div><span className="font-semibold">Email:</span> {selectedAccount.email}</div>
+      <div><span className="font-semibold">Role:</span> {selectedAccount.role}</div>
+      <div><span className="font-semibold">Status:</span> {selectedAccount.status}</div>
+      <div><span className="font-semibold">Email Verified:</span> {selectedAccount.emailVerified ? 'Yes' : 'No'}</div>
+      <div><span className="font-semibold">Created At:</span> {new Date(selectedAccount.createdAt).toLocaleString()}</div>
+    </div>
+  ) : (
+    <div className="text-center text-gray-500">
+      Failed to load account details.
+    </div>
+  )}
+</Modal>
+      
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* Modal */}
       {showModal && (
