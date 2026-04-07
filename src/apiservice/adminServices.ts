@@ -1,9 +1,9 @@
-// Audit Log API
-
-import type { AuditLogResponse, SupplierApplication } from './adminModels';
 
 
-import type { AdminCategory, AdminSupplier, AdminSupplierUser, CreateCategoryPayload } from './adminModels';
+import type { AuditLog, AuditLogResponse, SupplierApplication } from './adminModels';
+
+
+import type { AdminCategory, AdminSupplier, CreateCategoryPayload } from './adminModels';
 // Type for supplier user
 
 type AppEnv = ImportMetaEnv & {
@@ -304,6 +304,18 @@ export async function getAuditLogs(params: { page?: number; limit?: number } = {
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch audit logs');
+    }
+    return res.json();
+}
+// Get a single audit log by ID
+export async function getAuditLogById(id: string): Promise<AuditLog> {
+    const res = await fetch(`${API_BASE_URL}/audit/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch audit log');
     }
     return res.json();
 }

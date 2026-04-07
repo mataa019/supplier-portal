@@ -1,9 +1,12 @@
 
 
 import { useEffect, useState } from 'react';
-import { Table, Spin, Tag } from 'antd';
-import { getAuditLogs } from '../apiservice/adminServices';
-import type { AuditLog, AuditLogMeta } from '../apiservice/adminModels';
+import { Tag,  } from 'antd';
+import { getAuditLogs, getAuditLogById } from '../apiservice/adminServices';
+import type { AuditLog } from '../apiservice/adminModels';
+function prettyJson(obj: any) {
+  return <pre className="whitespace-pre-wrap text-xs text-gray-700 bg-gray-50 p-2 rounded max-w-full overflow-x-auto">{JSON.stringify(obj, null, 2)}</pre>;
+}
 
 const columns = [
   {
@@ -50,12 +53,14 @@ const columns = [
   },
 ];
 
-export default function AuditLogPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [meta, setMeta] = useState<AuditLogMeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const fetchLogs = async (pageNum = 1, limit = 20) => {
     setLoading(true);
@@ -68,6 +73,19 @@ export default function AuditLogPage() {
       setMeta(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRowClick = async (record: AuditLog) => {
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    try {
+      const log = await getAuditLogById(record.id);
+      setSelectedLog(log);
+    } catch {
+      setSelectedLog(null);
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -103,9 +121,37 @@ export default function AuditLogPage() {
             }}
             bordered
             size="middle"
+            onRow={(record) => ({ onClick: () => handleRowClick(record), style: { cursor: 'pointer' } })}
           />
         )}
       </div>
+
+      <Modal
+        open={detailModalOpen}
+        onCancel={() => { setDetailModalOpen(false); setSelectedLog(null); }}
+        title="Audit Log Details"
+        footer={null}
+        width={600}
+      >
+        {detailLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <Spin size="large" />
+          </div>
+        ) : selectedLog ? (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="ID">{selectedLog.id}</Descriptions.Item>
+            <Descriptions.Item label="Date/Time">{new Date(selectedLog.createdAt).toLocaleString()}</Descriptions.Item>
+            <Descriptions.Item label="User">{selectedLog.user ? `${selectedLog.user.email} (${selectedLog.user.role})` : 'System'}</Descriptions.Item>
+            <Descriptions.Item label="Action">{selectedLog.action}</Descriptions.Item>
+            <Descriptions.Item label="Entity">{selectedLog.entity}</Descriptions.Item>
+            <Descriptions.Item label="Entity ID">{selectedLog.entityId || '-'}</Descriptions.Item>
+            <Descriptions.Item label="IP Address">{selectedLog.ipAddress || '-'}</Descriptions.Item>
+            <Descriptions.Item label="Details">{selectedLog.details ? prettyJson(selectedLog.details) : '-'}</Descriptions.Item>
+          </Descriptions>
+        ) : (
+          <div className="text-center text-gray-500">Failed to load details.</div>
+        )}
+      </Modal>
     </div>
   );
-}
+
