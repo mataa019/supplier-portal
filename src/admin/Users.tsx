@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getAllAccounts, createAccount, getAccountById } from '../apiservice/adminServices';
+import { getAuditLogs } from '../apiservice/adminServices';
 import type { AdminAccount } from '../apiservice/adminModels';
 
 import { Modal } from 'antd';
@@ -79,33 +80,42 @@ const rolePermissions = {
     return matchesSearch && matchesRole;
   });
 
-  // Load users from backend
+  // Load users and last login from backend
   useEffect(() => {
     setLoading(true);
-    const minDuration = 2300;
-    const start = Date.now();
-    getAllAccounts()
-      .then((data) => {
-        // Map backend data to UI User type
+    // Always use the audit log endpoint for last login info
+    Promise.all([
+      getAllAccounts(),
+      getAuditLogs({ limit: 1000 })
+    ])
+      .then(([accounts, auditLogResp]) => {
+        // Map userId to latest login date string (from audit log)
+        const loginMap = new Map<string, string>();
+        auditLogResp.data.forEach((log: any) => {
+          if (log.action === 'login' && log.userId) {
+            const prev = loginMap.get(log.userId);
+            if (!prev || new Date(log.createdAt) > new Date(prev)) {
+              loginMap.set(log.userId, log.createdAt);
+            }
+          }
+        });
+        // Only show admin accounts (exclude suppliers)
         setUsers(
-          data.map((u) => ({
-            ...u,
-            name: u.email.split('@')[0], // fallback, since backend has no name
-            department: '', // not available
-            lastLogin: '', // not available
-          }))
+          accounts
+            .filter((u) => u.role === 'admin' || u.role === 'manager' || u.role === 'viewer')
+            .map((u) => ({
+              ...u,
+              name: u.email.split('@')[0],
+              department: '',
+              // Last Login is always sourced from audit log endpoint
+              lastLogin: loginMap.get(u.id)
+                ? new Date(loginMap.get(u.id)!).toLocaleString()
+                : '-',
+            }))
         );
       })
       .catch(() => setUsers([]))
-      .finally(() => {
-        const elapsed = Date.now() - start;
-        const remaining = minDuration - elapsed;
-        if (remaining > 0) {
-          setTimeout(() => setLoading(false), remaining);
-        } else {
-          setLoading(false);
-        }
-      });
+      .finally(() => setLoading(false));
   }, []);
 
   const handleAdd = () => {
@@ -274,7 +284,7 @@ const rolePermissions = {
         <tr>
           <th className="px-4 py-3 text-left">User</th>
           <th className="px-4 py-3 text-left">Role</th>
-          <th className="px-4 py-3 text-left hidden lg:table-cell">Last Login</th>
+          <th className="px-4 py-3 text-left hidden lg:table-cell">Last Login (Audit)</th>
           <th className="px-4 py-3 text-left">Status</th>
           <th className="px-4 py-3 text-right">Actions</th>
         </tr>
