@@ -1,3 +1,15 @@
+// Get a single user account by ID (admin)
+export async function getAccountById(id: string): Promise<AdminAccount> {
+    const res = await fetch(`${API_BASE_URL}/admin/accounts/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch account');
+    }
+    return res.json();
+}
 
 
 import type { AdminAccount, ApplicationFilters, AuditLog, AuditLogResponse, CreateAccountPayload, SupplierApplication } from './adminModels';
