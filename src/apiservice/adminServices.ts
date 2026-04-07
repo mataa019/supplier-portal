@@ -1,6 +1,6 @@
 
 
-import type { AdminAccount, ApplicationFilters, AuditLog, AuditLogResponse, SupplierApplication } from './adminModels';
+import type { AdminAccount, ApplicationFilters, AuditLog, AuditLogResponse, CreateAccountPayload, SupplierApplication } from './adminModels';
 
 
 import type { AdminCategory, AdminSupplier, CreateCategoryPayload } from './adminModels';

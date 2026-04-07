@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllAccounts, AdminAccount } from '../apiservice/adminServices';
+import { getAllAccounts, AdminAccount, createAccount } from '../apiservice/adminServices';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -135,10 +135,12 @@ const rolePermissions = {
     );
   };
 
-  // Optionally, implement backend add/edit here
-  const handleSubmit = (e: React.FormEvent) => {
+  // Add user via backend
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     if (editingUser) {
+      // Optionally implement backend update here
       setUsers(
         users.map((u) =>
           u.id === editingUser.id
@@ -153,20 +155,32 @@ const rolePermissions = {
             : u
         )
       );
+      setLoading(false);
+      setShowModal(false);
     } else {
-      const newUser: User = {
-        id: `USR-${String(users.length + 1).padStart(3, '0')}`,
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        department: formData.department,
-        status: formData.status,
-        lastLogin: 'Never',
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setUsers([...users, newUser]);
+      try {
+        const newAccount = await createAccount({
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          status: formData.status,
+        });
+        setUsers([
+          ...users,
+          {
+            ...newAccount,
+            name: formData.name,
+            department: formData.department,
+            lastLogin: '',
+          },
+        ]);
+        setShowModal(false);
+      } catch (err: any) {
+        alert(err.message || 'Failed to create user');
+      } finally {
+        setLoading(false);
+      }
     }
-    setShowModal(false);
   };
 
   return (
