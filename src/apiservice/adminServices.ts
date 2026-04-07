@@ -1,6 +1,6 @@
 
 
-import type { AuditLog, AuditLogResponse, SupplierApplication } from './adminModels';
+import type { AdminAccount, ApplicationFilters, AuditLog, AuditLogResponse, SupplierApplication } from './adminModels';
 
 
 import type { AdminCategory, AdminSupplier, CreateCategoryPayload } from './adminModels';
@@ -167,15 +167,7 @@ export async function deleteAdminSupplier(supplierId: string): Promise<void> {
 }
 //APPLICATIONS
 
-export interface ApplicationFilters {
-    page?: number;
-    limit?: number;
-    status?: string;
-    categoryId?: string;
-    supplierId?: string;
-    search?: string;
 
-}
 
 export async function getAllApplications(filters: ApplicationFilters = {}): Promise<SupplierApplication[]> {
     const params = new URLSearchParams();
@@ -316,6 +308,21 @@ export async function getAuditLogById(id: string): Promise<AuditLog> {
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch audit log');
+    }
+    return res.json();
+}
+// User Account type for /admin/accounts
+
+
+// Get all user accounts (admin)
+export async function getAllAccounts(): Promise<AdminAccount[]> {
+    const res = await fetch(`${API_BASE_URL}/admin/accounts`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch accounts');
     }
     return res.json();
 }
