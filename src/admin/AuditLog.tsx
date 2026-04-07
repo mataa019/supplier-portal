@@ -1,9 +1,9 @@
 
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, Spin, Tag } from 'antd';
 import { getAuditLogs } from '../apiservice/adminServices';
-import type { AuditLog, AuditLogMeta } from '../apiservice/adminServices';
+import type { AuditLog, AuditLogMeta } from '../apiservice/adminModels';
 
 const columns = [
   {
