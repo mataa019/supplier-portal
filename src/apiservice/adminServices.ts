@@ -362,5 +362,14 @@ export async function getAccountById(id: string): Promise<AdminAccount> {
     return data;
 }
 
-
+// Update an admin account by ID
+export async function updateAccount(id: string, data: { email: string; password?: string; role: string; status: string }) {
+  const res = await fetch(`/admin/accounts/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update account');
+  return res.json();
+}
 

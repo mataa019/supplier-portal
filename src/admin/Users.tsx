@@ -83,23 +83,21 @@ const rolePermissions = {
   // Load users and last login from backend
   useEffect(() => {
     setLoading(true);
-    // Always use the audit log endpoint for last login info
     Promise.all([
       getAllAccounts(),
       getAuditLogs({ limit: 1000 })
     ])
       .then(([accounts, auditLogResp]) => {
-        // Map userId to latest login date string (from audit log)
         const loginMap = new Map<string, string>();
         auditLogResp.data.forEach((log: any) => {
-          if (log.action === 'login' && log.userId) {
+          if (typeof log.action === 'string' && log.action.toLowerCase() === 'login' && log.userId) {
             const prev = loginMap.get(log.userId);
             if (!prev || new Date(log.createdAt) > new Date(prev)) {
               loginMap.set(log.userId, log.createdAt);
             }
           }
         });
-        // Only show admin accounts (exclude suppliers)
+
         setUsers(
           accounts
             .filter((u) => u.role === 'admin' || u.role === 'manager' || u.role === 'viewer')
@@ -107,7 +105,6 @@ const rolePermissions = {
               ...u,
               name: u.email.split('@')[0],
               department: '',
-              // Last Login is always sourced from audit log endpoint
               lastLogin: loginMap.get(u.id)
                 ? new Date(loginMap.get(u.id)!).toLocaleString()
                 : '-',
@@ -277,14 +274,14 @@ const rolePermissions = {
       </div>
 
       {/* Table */}
-       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
      <div className="overflow-x-auto">
     <table className="w-full">
       <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
         <tr>
           <th className="px-4 py-3 text-left">User</th>
           <th className="px-4 py-3 text-left">Role</th>
-          <th className="px-4 py-3 text-left hidden lg:table-cell">Last Login (Audit)</th>
+          <th className="px-4 py-3 text-left hidden lg:table-cell">Last Login</th>
           <th className="px-4 py-3 text-left">Status</th>
           <th className="px-4 py-3 text-right">Actions</th>
         </tr>
@@ -316,7 +313,8 @@ const rolePermissions = {
               </td>
 
               <td className="px-4 py-4 text-sm text-gray-500 hidden lg:table-cell">
-                {user.lastLogin || '-'}
+                {/* Show dash only if no last login, otherwise show formatted date */}
+                {user.lastLogin && user.lastLogin !== '-' ? user.lastLogin : <span className="text-gray-400">-</span>}
               </td>
 
               <td className="px-4 py-4">
@@ -399,19 +397,6 @@ const rolePermissions = {
   )}
 </Modal>
       
-
-
-
-
-
-
-
-
-
-
-
-
-
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
