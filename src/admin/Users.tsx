@@ -1,5 +1,23 @@
 import { useEffect, useState } from 'react';
-import { getAllAccounts, AdminAccount, createAccount } from '../apiservice/adminServices';
+import { getAllAccounts, AdminAccount, createAccount, getAccountById } from '../apiservice/adminServices';
+
+import { Modal } from 'antd';
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<AdminAccount | null>(null);
+  // View account details
+  const handleViewAccount = async (id: string) => {
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    try {
+      const account = await getAccountById(id);
+      setSelectedAccount(account);
+    } catch {
+      setSelectedAccount(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -262,7 +280,31 @@ const rolePermissions = {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr key={user.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewAccount(user.id)}>
+                        {/* Account Detail Modal */}
+                        <Modal
+                          open={detailModalOpen}
+                          onCancel={() => { setDetailModalOpen(false); setSelectedAccount(null); }}
+                          title="Account Details"
+                          footer={null}
+                          width={400}
+                        >
+                          {detailLoading ? (
+                            <div className="flex justify-center items-center py-8">Loading...</div>
+                          ) : selectedAccount ? (
+                            <div className="space-y-2">
+                              <div><span className="font-semibold">ID:</span> {selectedAccount.id}</div>
+                              <div><span className="font-semibold">Email:</span> {selectedAccount.email}</div>
+                              <div><span className="font-semibold">Role:</span> {selectedAccount.role}</div>
+                              <div><span className="font-semibold">Status:</span> {selectedAccount.status}</div>
+                              <div><span className="font-semibold">Email Verified:</span> {selectedAccount.emailVerified ? 'Yes' : 'No'}</div>
+                              <div><span className="font-semibold">Created At:</span> {new Date(selectedAccount.createdAt).toLocaleString()}</div>
+                              <div><span className="font-semibold">Updated At:</span> {new Date(selectedAccount.updatedAt).toLocaleString()}</div>
+                            </div>
+                          ) : (
+                            <div className="text-center text-gray-500">Failed to load account details.</div>
+                          )}
+                        </Modal>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
