@@ -1,105 +1,71 @@
-import { useState } from 'react';
+import LoadingOverlay from '../component/LoadingOverlay';
+
+import { useState, useRef, useEffect } from 'react';
 import {
-  MagnifyingGlassIcon,
+  createAdminSupplierCategory,
+  listAdminSupplierCategories,
+  updateAdminSupplierCategory,
+  deleteAdminSupplierCategory,
+  uploadCategoryTemplateDocument,
+  getAdminSupplierCategory,
+} from '../apiservice/adminServices';
+import { DocumentArrowDownIcon, FolderIcon } from '@heroicons/react/16/solid';
+import CategoryModal from './model/CategoryModal';
+import {
   PlusIcon,
+  MagnifyingGlassIcon,
   PencilIcon,
-  TrashIcon,
-  XMarkIcon,
-  FolderIcon,
-  DocumentArrowDownIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  applicationFee: string;
-  documentTemplate: string;
-  suppliersCount: number;
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
-
-const mockCategories: Category[] = [
-  {
-    id: 'CAT-001',
-    name: 'Construction Materials',
-    description: 'Building materials, cement, steel, bricks, roofing materials, etc.',
-    applicationFee: 'K2,500',
-    documentTemplate: 'construction_application.pdf',
-    suppliersCount: 45,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 'CAT-002',
-    name: 'IT Equipment & Services',
-    description: 'Computers, software, networking equipment, IT support services',
-    applicationFee: 'K3,000',
-    documentTemplate: 'it_services_application.pdf',
-    suppliersCount: 32,
-    status: 'active',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 'CAT-003',
-    name: 'Cleaning Services',
-    description: 'Office cleaning, industrial cleaning, janitorial supplies',
-    applicationFee: 'K1,000',
-    documentTemplate: 'cleaning_application.pdf',
-    suppliersCount: 28,
-    status: 'active',
-    createdAt: '2024-02-01',
-  },
-  {
-    id: 'CAT-004',
-    name: 'Catering Services',
-    description: 'Food catering, event catering, cafeteria services',
-    applicationFee: 'K1,500',
-    documentTemplate: 'catering_application.pdf',
-    suppliersCount: 19,
-    status: 'active',
-    createdAt: '2024-02-15',
-  },
-  {
-    id: 'CAT-005',
-    name: 'Office Supplies',
-    description: 'Stationery, office furniture, printing supplies',
-    applicationFee: 'K1,500',
-    documentTemplate: 'office_supplies_application.pdf',
-    suppliersCount: 24,
-    status: 'active',
-    createdAt: '2024-03-01',
-  },
-  {
-    id: 'CAT-006',
-    name: 'Security Services',
-    description: 'Guard services, surveillance systems, access control',
-    applicationFee: 'K2,000',
-    documentTemplate: 'security_application.pdf',
-    suppliersCount: 15,
-    status: 'inactive',
-    createdAt: '2024-03-15',
-  },
-];
+import type { AdminCategory } from '../apiservice/adminModels';
 
 const statusColors = {
   active: 'bg-green-100 text-green-700',
   inactive: 'bg-gray-100 text-gray-600',
 };
 
-export default function Categories() {
-  const [categories, setCategories] = useState(mockCategories);
+function Categories() {
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [loading, setLoading] = useState(false);
+  const activeCategories = categories.filter(cat => cat.status === 'active').length;
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      const minDuration = 2300;
+      const start = Date.now();
+      try {
+        const data = await listAdminSupplierCategories();
+        setCategories(data);
+      } catch (err: any) {
+        alert(err.message || 'Failed to fetch categories');
+      } finally {
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      }
+    };
+    fetchCategories();
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    requirements: '',
     applicationFee: '',
-    documentTemplate: '',
+    documentTemplate: '', 
     status: 'active' as 'active' | 'inactive',
   });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const filteredCategories = categories.filter(
     (cat) =>
@@ -112,6 +78,7 @@ export default function Categories() {
     setFormData({
       name: '',
       description: '',
+      requirements: '',
       applicationFee: '',
       documentTemplate: '',
       status: 'active',
@@ -119,69 +86,102 @@ export default function Categories() {
     setShowModal(true);
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setFormData({
-      name: category.name,
-      description: category.description,
-      applicationFee: category.applicationFee.replace('K', ''),
-      documentTemplate: category.documentTemplate,
-      status: category.status,
-    });
-    setShowModal(true);
+  const handleEdit = async (category: AdminCategory) => {
+    try {
+      // Fetch latest category data from API
+      const cat = await getAdminSupplierCategory(category.id);
+      setEditingCategory(cat);
+      setFormData({
+        name: cat.name,
+        description: cat.description,
+        requirements: cat.requirements,
+        applicationFee: String(cat.applicationFee),
+        documentTemplate: cat.documentTemplate || '',
+        status: cat.status === 'active' || cat.status === 'inactive' ? cat.status : 'inactive',
+      });
+      setFile(null);
+      setShowModal(true);
+    } catch (err: any) {
+      alert(err.message || 'Failed to fetch category');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    const category = categories.find((c) => c.id === id);
-    if (category && category.suppliersCount > 0) {
-      alert('Cannot delete category with active suppliers. Please reassign suppliers first.');
-      return;
-    }
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter((c) => c.id !== id));
+      try {
+        await deleteAdminSupplierCategory(id);
+        setCategories(categories.filter((c) => c.id !== id));
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete category');
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingCategory) {
-      // Update existing
-      setCategories(
-        categories.map((c) =>
-          c.id === editingCategory.id
-            ? {
-                ...c,
-                name: formData.name,
-                description: formData.description,
-                applicationFee: `K${formData.applicationFee}`,
-                documentTemplate: formData.documentTemplate,
-                status: formData.status,
-              }
-            : c
-        )
-      );
-    } else {
-      // Add new
-      const newCategory: Category = {
-        id: `CAT-${String(categories.length + 1).padStart(3, '0')}`,
-        name: formData.name,
-        description: formData.description,
-        applicationFee: `K${formData.applicationFee}`,
-        documentTemplate: formData.documentTemplate,
-        suppliersCount: 0,
-        status: formData.status,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setCategories([...categories, newCategory]);
+    setUploading(true);
+    try {
+      // Always ensure requirements is a non-empty string
+      const requirementsString = Array.isArray(formData.requirements)
+        ? formData.requirements.join(',')
+        : formData.requirements;
+      if (!requirementsString || requirementsString.trim() === '') {
+        alert('Please select at least one requirement.');
+        setUploading(false);
+        return;
+      }
+      if (!editingCategory && !file) {
+        alert('Please upload a document template.');
+        setUploading(false);
+        return;
+      }
+  
+      if (editingCategory) {
+        // Update category
+        const payload = {
+          name: formData.name,
+          description: formData.description,
+          applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
+          requirements: requirementsString,
+          status: formData.status,
+          documentTemplate: file ? file.name : (editingCategory.documentTemplate || ''),
+        };
+        await updateAdminSupplierCategory(editingCategory.id, payload);
+        // If file uploaded, upload separately
+        if (file) {
+          await uploadCategoryTemplateDocument(editingCategory.id, file);
+        }
+      } else {
+        // Create new category
+        const payload = {
+          name: formData.name,
+          description: formData.description,
+          applicationFee: Number(formData.applicationFee.replace(/[^\d.]/g, '')),
+          requirements: requirementsString,
+          status: formData.status,
+          documentTemplate: file ? file.name : '',
+        };
+        const created = await createAdminSupplierCategory(payload);
+        if (file && created.id) {
+          await uploadCategoryTemplateDocument(created.id, file);
+        }
+      }
+      // Refresh categories
+      const data = await listAdminSupplierCategories();
+      setCategories(data);
+      setShowModal(false);
+      setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err: any) {
+      alert(err.message || 'Failed to save category');
+    } finally {
+      setUploading(false);
     }
-    setShowModal(false);
   };
-
-  const totalSuppliers = categories.reduce((acc, c) => acc + c.suppliersCount, 0);
-  const activeCategories = categories.filter((c) => c.status === 'active').length;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {loading && <LoadingOverlay message="Loading..." />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -198,7 +198,7 @@ export default function Categories() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
           <p className="text-sm text-gray-500">Total Categories</p>
@@ -206,10 +206,6 @@ export default function Categories() {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-2xl font-bold text-green-600">{activeCategories}</p>
           <p className="text-sm text-gray-500">Active</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-2xl font-bold text-blue-600">{totalSuppliers}</p>
-          <p className="text-sm text-gray-500">Total Suppliers</p>
         </div>
       </div>
 
@@ -241,7 +237,7 @@ export default function Categories() {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">{category.name}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[category.status]}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[category.status as keyof typeof statusColors]}`}>
                     {category.status.charAt(0).toUpperCase() + category.status.slice(1)}
                   </span>
                 </div>
@@ -271,16 +267,23 @@ export default function Categories() {
                 <span className="text-gray-500">Application Fee</span>
                 <span className="font-semibold text-gray-900">{category.applicationFee}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Suppliers</span>
-                <span className="font-semibold text-gray-900">{category.suppliersCount}</span>
-              </div>
+              {/* No suppliersCount field in API, so this section is removed */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Template</span>
-                <button className="flex items-center gap-1 text-red-600 hover:text-red-700">
-                  <DocumentArrowDownIcon className="w-4 h-4" />
-                  <span className="text-xs">Download</span>
-                </button>
+                {category.documentTemplate ? (
+                  <a
+                    href={category.documentTemplate}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                    download={category.documentTemplate.split('/').pop() || 'template'}
+                  >
+                    <DocumentArrowDownIcon className="w-4 h-4" />
+                    <span className="text-xs">Download</span>
+                  </a>
+                ) : (
+                  <span className="text-xs text-gray-400">No file</span>
+                )}
               </div>
             </div>
           </div>
@@ -293,93 +296,23 @@ export default function Categories() {
         </div>
       )}
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingCategory ? 'Edit Category' : 'Add New Category'}
-              </h3>
-              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded">
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Application Fee (K)</label>
-                <input
-                  type="text"
-                  value={formData.applicationFee}
-                  onChange={(e) => setFormData({ ...formData, applicationFee: e.target.value })}
-                  placeholder="e.g., 2,500"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Document Template</label>
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
-                {editingCategory && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Current: {editingCategory.documentTemplate}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  {editingCategory ? 'Save Changes' : 'Add Category'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modal as component */}
+      <CategoryModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleSubmit}
+        formData={formData}
+        setFormData={setFormData}
+        fileInputRef={fileInputRef}
+        setFile={setFile}
+        editingCategory={editingCategory}
+        uploading={uploading}
+      />
     </div>
   );
 }
+
+export default Categories;
+
+
+

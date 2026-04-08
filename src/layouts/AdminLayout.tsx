@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import {
   Bars3Icon,
   BellIcon,
@@ -7,9 +7,53 @@ import {
 } from '@heroicons/react/24/outline';
 import AdminSidebar from './AdminSidebar';
 import Logo from '../assets/Minet_Logo.png';
+import { getUserProfile } from '../apiservice/Apiservice';
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        const data = await getUserProfile();
+        if (!data) {
+          throw new Error('No user data returned');
+        }
+        setUser({ id: data.id, email: data.email, role: data.role });
+
+        if (!['admin', 'manager'].includes(data.role)) {
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (parsedUser && ['admin', 'manager'].includes(parsedUser.role)) {
+              setUser(parsedUser);
+              return;
+            }
+          } catch (e) {
+            // Invalid local data
+          }
+        }
+
+        navigate('/login');
+      }
+    };
+    
+    fetchProfile();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -39,8 +83,8 @@ export default function AdminLayout() {
             <div className="flex items-center gap-2">
               <UserCircleIcon className="w-8 h-8 text-gray-400" />
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">Admin User</p>
-                <p className="text-xs text-gray-400">Administrator</p>
+                <p className="text-sm font-medium text-white">{user?.email || 'Admin User'}</p>
+                <p className="text-xs text-gray-400">{user?.role || 'Administrator'}</p>
               </div>
             </div>
           </div>

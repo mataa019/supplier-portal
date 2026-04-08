@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   HomeIcon,
   UsersIcon,
@@ -17,6 +17,7 @@ const menuItems = [
   { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
   { path: '/admin/categories', label: 'Categories', icon: FolderIcon },
   { path: '/admin/users', label: 'Users', icon: UserGroupIcon },
+  { path: '/admin/audit-log', label: 'Audit Log', icon: Cog6ToothIcon },
 ];
 
 interface AdminSidebarProps {
@@ -25,9 +26,18 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleClick = () => {
     if (onNavigate) onNavigate();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('pendingLoginEmail');
+    handleClick();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -68,14 +78,13 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
           <Cog6ToothIcon className="w-5 h-5" />
           Settings
         </Link>
-        <Link
-          to="/login"
-          onClick={handleClick}
-          className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-left"
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
           Logout
-        </Link>
+        </button>
       </div>
     </aside>
   );

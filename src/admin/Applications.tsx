@@ -1,154 +1,200 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import LoadingOverlay from '../component/LoadingOverlay';
+// Simple modal for remarks input
+function RemarksModal({ open, onClose, onSubmit, action, loading }: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (remarks: string) => void;
+  action: 'approve' | 'reject';
+  loading?: boolean;
+}) {
+  const [remarks, setRemarks] = useState('');
+  useEffect(() => { if (open) setRemarks(''); }, [open]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+        <h2 className="text-lg font-semibold mb-2">{action === 'approve' ? 'Approve' : 'Reject'} Application</h2>
+        <label className="block text-sm mb-2">Remarks<span className="text-red-500">*</span></label>
+        <textarea
+          className="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+          rows={3}
+          value={remarks}
+          onChange={e => setRemarks(e.target.value)}
+          disabled={loading}
+        />
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-1 rounded bg-gray-200 text-gray-700"
+            onClick={onClose}
+            disabled={loading}
+          >Cancel</button>
+          <button
+            className={`px-4 py-1 rounded text-white ${action === 'approve' ? 'bg-green-600' : 'bg-red-600'} ${loading ? 'opacity-60' : ''}`}
+            onClick={() => onSubmit(remarks)}
+            disabled={loading || !remarks.trim()}
+          >{action === 'approve' ? 'Approve' : 'Reject'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+import { getAllApplications, listAdminSuppliers, getAdminSupplier, ApproveApplication, RejectApplication } from '../apiservice/adminServices';
+import type { SupplierApplication, AdminSupplier } from '../apiservice/adminModels';
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
   EyeIcon,
   CheckIcon,
   XMarkIcon,
-  DocumentTextIcon,
-  ClockIcon,
 } from '@heroicons/react/24/outline';
+import ApplicationDetailsModal from './model/ApplicationDetailsModal';
 
-interface Application {
-  id: string;
-  companyName: string;
-  email: string;
-  tpin: string;
-  category: string;
-  fee: string;
-  status: 'pending' | 'approved' | 'rejected' | 'payment_pending';
-  submittedDate: string;
-  documents: { name: string; uploaded: boolean }[];
-}
 
-const mockApplications: Application[] = [
-  {
-    id: 'APP-2026-0045',
-    companyName: 'ABC Construction Ltd',
-    email: 'info@abcconstruction.com',
-    tpin: '1234567890',
-    category: 'Construction Materials',
-    fee: 'K2,500',
-    status: 'pending',
-    submittedDate: '2026-03-09',
-    documents: [
-      { name: 'Application Form', uploaded: true },
-      { name: 'Business Registration', uploaded: true },
-      { name: 'Tax Certificate', uploaded: true },
-      { name: 'Financial Statements', uploaded: true },
-    ],
-  },
-  {
-    id: 'APP-2026-0044',
-    companyName: 'Tech Solutions Inc',
-    email: 'contact@techsolutions.com',
-    tpin: '0987654321',
-    category: 'IT Equipment & Services',
-    fee: 'K3,000',
-    status: 'approved',
-    submittedDate: '2026-03-08',
-    documents: [
-      { name: 'Application Form', uploaded: true },
-      { name: 'Business Registration', uploaded: true },
-      { name: 'Tax Certificate', uploaded: true },
-    ],
-  },
-  {
-    id: 'APP-2026-0043',
-    companyName: 'CleanPro Services',
-    email: 'hello@cleanpro.com',
-    tpin: '1122334455',
-    category: 'Cleaning Services',
-    fee: 'K1,000',
-    status: 'pending',
-    submittedDate: '2026-03-08',
-    documents: [
-      { name: 'Application Form', uploaded: true },
-      { name: 'Business Registration', uploaded: true },
-      { name: 'Tax Certificate', uploaded: false },
-    ],
-  },
-  {
-    id: 'APP-2026-0042',
-    companyName: 'SafeGuard Security',
-    email: 'info@safeguard.com',
-    tpin: '5566778899',
-    category: 'Security Services',
-    fee: 'K2,000',
-    status: 'rejected',
-    submittedDate: '2026-03-07',
-    documents: [
-      { name: 'Application Form', uploaded: true },
-      { name: 'Business Registration', uploaded: false },
-    ],
-  },
-  {
-    id: 'APP-2026-0041',
-    companyName: 'Office Plus Zambia',
-    email: 'sales@officeplus.co.zm',
-    tpin: '9988776655',
-    category: 'Office Supplies',
-    fee: 'K1,500',
-    status: 'payment_pending',
-    submittedDate: '2026-03-07',
-    documents: [
-      { name: 'Application Form', uploaded: true },
-      { name: 'Business Registration', uploaded: true },
-      { name: 'Tax Certificate', uploaded: true },
-    ],
-  },
-];
+
+
+
 
 const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-700',
+  submitted: 'bg-gray-100 text-gray-700',
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
   payment_pending: 'bg-blue-100 text-blue-700',
+  paid: 'bg-green-200 text-green-800',
 };
 
 const statusLabels = {
-  pending: 'Pending Review',
+  submitted: 'Submitted',
   approved: 'Approved',
   rejected: 'Rejected',
   payment_pending: 'Awaiting Payment',
+  paid: 'Paid',
 };
 
+
+
 export default function Applications() {
-  const [applications, setApplications] = useState(mockApplications);
+  const [suppliers, setSuppliers] = useState<AdminSupplier[]>([]);
+  const [supplierMap, setSupplierMap] = useState<Record<string, AdminSupplier>>({});
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
+  const [applications, setApplications] = useState<SupplierApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [selectedApp, setSelectedApp] = useState<SupplierApplication | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const filteredApplications = applications.filter((app) => {
-    const matchesSearch = app.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    setLoadingSuppliers(true);
+    listAdminSuppliers()
+      .then((data) => {
+        setSuppliers(data);
+      })
+      .catch((err) => alert(err.message || 'Failed to fetch suppliers'))
+      .finally(() => setLoadingSuppliers(false));
+  }, []);
 
-  const handleApprove = (id: string) => {
-    setApplications(applications.map((app) =>
-      app.id === id ? { ...app, status: 'approved' as const } : app
-    ));
-    if (selectedApp?.id === id) {
-      setSelectedApp({ ...selectedApp, status: 'approved' });
-    }
+  useEffect(() => {
+    setLoading(true);
+    const minDuration = 2300;
+    const start = Date.now();
+    getAllApplications({
+      supplierId: selectedSupplierId ? selectedSupplierId : undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      search: searchTerm || undefined,
+      page,
+      limit,
+    })
+      .then((res: any) => {
+        // API returns { data: Application[], meta: ... }
+        setApplications(res.data || []);
+        setTotalPages(res.meta?.totalPages || 1);
+      })
+      .catch((err) => alert(err.message || 'Failed to fetch applications'))
+      .finally(() => {
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      });
+  }, [selectedSupplierId, statusFilter, searchTerm, page, limit]);
+
+  // Fetch supplier details for all unique supplierIds in applications
+  useEffect(() => {
+    const uniqueSupplierIds = Array.from(new Set(applications.map(app => app.supplierId)));
+    const missingSupplierIds = uniqueSupplierIds.filter(id => !supplierMap[id]);
+    if (missingSupplierIds.length === 0) return;
+    Promise.all(missingSupplierIds.map(id => getAdminSupplier(id).catch(() => null)))
+      .then(results => {
+        const newMap: Record<string, AdminSupplier> = { ...supplierMap };
+        results.forEach((supplier, idx) => {
+          if (supplier && missingSupplierIds[idx]) {
+            newMap[missingSupplierIds[idx]] = supplier;
+          }
+        });
+        setSupplierMap(newMap);
+      });
+  }, [applications]);
+
+
+  // No need to filter client-side, server handles it
+  const filteredApplications = applications;
+
+
+  // Remarks modal state
+  const [remarksModal, setRemarksModal] = useState<{
+    open: boolean;
+    action: 'approve' | 'reject';
+    appId: string | null;
+  }>({ open: false, action: 'approve', appId: null });
+  const [remarksLoading, setRemarksLoading] = useState(false);
+
+  const openRemarksModal = (action: 'approve' | 'reject', appId: string) => {
+    setRemarksModal({ open: true, action, appId });
+  };
+  const closeRemarksModal = () => {
+    setRemarksModal({ open: false, action: 'approve', appId: null });
   };
 
-  const handleReject = (id: string) => {
-    if (confirm('Are you sure you want to reject this application?')) {
-      setApplications(applications.map((app) =>
-        app.id === id ? { ...app, status: 'rejected' as const } : app
-      ));
-      if (selectedApp?.id === id) {
-        setSelectedApp({ ...selectedApp, status: 'rejected' });
+  const handleRemarksSubmit = async (remarks: string) => {
+    if (!remarksModal.appId) return;
+    setRemarksLoading(true);
+    try {
+      if (remarksModal.action === 'approve') {
+        await ApproveApplication(remarksModal.appId, remarks);
+        setApplications(applications.map((app) =>
+          app.id === remarksModal.appId ? { ...app, status: 'approved', remarks } : app
+        ));
+        if (selectedApp?.id === remarksModal.appId && selectedApp) {
+          setSelectedApp({ ...selectedApp, status: 'approved', remarks });
+        }
+        alert('Application approved successfully.');
+      } else {
+        await RejectApplication(remarksModal.appId, remarks);
+        setApplications(applications.map((app) =>
+          app.id === remarksModal.appId ? { ...app, status: 'rejected', remarks } : app
+        ));
+        if (selectedApp?.id === remarksModal.appId && selectedApp) {
+          setSelectedApp({ ...selectedApp, status: 'rejected', remarks });
+        }
+        alert('Application rejected successfully.');
       }
+      closeRemarksModal();
+    } catch (err: any) {
+      alert(err.message || 'Failed to process application');
+    } finally {
+      setRemarksLoading(false);
     }
   };
 
-  const handleView = (app: Application) => {
+  const handleView = (app: SupplierApplication) => {
     setSelectedApp(app);
     setShowViewModal(true);
   };
@@ -160,13 +206,17 @@ export default function Applications() {
     rejected: applications.filter(a => a.status === 'rejected').length,
   };
 
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {(loading || loadingSuppliers) && <LoadingOverlay message="Loading..." />}
+      {loadingSuppliers && <div className="text-center py-8 text-gray-500">Loading suppliers...</div>}
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-gray-900">Applications</h1>
         <p className="text-sm text-gray-500 mt-1">Review and manage supplier applications</p>
       </div>
+
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -201,6 +251,21 @@ export default function Applications() {
               className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
+          {/* Supplier Filter Dropdown */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="supplierFilter" className="text-sm text-gray-600 hidden sm:block">Supplier:</label>
+            <select
+              id="supplierFilter"
+              value={selectedSupplierId}
+              onChange={e => setSelectedSupplierId(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option value="">All Suppliers</option>
+              {suppliers.map(sup => (
+                <option key={sup.id} value={sup.id}>{sup.companyName}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-center gap-2">
             <FunnelIcon className="w-5 h-5 text-gray-400" />
             <select
@@ -209,10 +274,12 @@ export default function Applications() {
               className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="all">All Status</option>
-              <option value="pending">Pending Review</option>
+              <option value="submitted">Submitted</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
               <option value="payment_pending">Awaiting Payment</option>
+              <option value="paid">Paid</option>
+              <option value="draft">Draft</option>
             </select>
           </div>
         </div>
@@ -236,17 +303,18 @@ export default function Applications() {
               {filteredApplications.map((app) => (
                 <tr key={app.id} className="hover:bg-gray-50">
                   <td className="px-4 py-4">
-                    <p className="text-sm font-medium text-gray-900">{app.companyName}</p>
-                    <p className="text-xs text-gray-500">{app.id}</p>
+                    <p className="text-sm font-medium text-gray-900">{supplierMap[app.supplierId]?.companyName || app.supplierId}</p>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{app.category}</td>
-                  <td className="px-4 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">{app.fee}</td>
+                  <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{app.category?.name}</td>
+                  <td className="px-4 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">{app.category?.applicationFee}</td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[app.status]}`}>
-                      {statusLabels[app.status]}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      statusColors[app.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {statusLabels[app.status as keyof typeof statusLabels] || app.status}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{app.submittedDate}</td>
+                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{app.submittedAt ? app.submittedAt.split('T')[0] : ''}</td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
@@ -256,24 +324,24 @@ export default function Applications() {
                       >
                         <EyeIcon className="w-4 h-4" />
                       </button>
-                      {app.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleApprove(app.id)}
-                            className="p-1.5 text-green-600 hover:bg-green-50 rounded"
-                            title="Approve"
-                          >
-                            <CheckIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleReject(app.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded"
-                            title="Reject"
-                          >
-                            <XMarkIcon className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
+                      <>
+                        <button
+                          onClick={() => app.status === 'pending' && openRemarksModal('approve', app.id)}
+                          className={`p-1.5 rounded ${app.status === 'pending' ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 cursor-not-allowed'}`}
+                          title="Approve"
+                          disabled={app.status !== 'pending'}
+                        >
+                          <CheckIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => app.status === 'pending' && openRemarksModal('reject', app.id)}
+                          className={`p-1.5 rounded ${app.status === 'pending' ? 'text-red-600 hover:bg-red-50' : 'text-gray-300 cursor-not-allowed'}`}
+                          title="Reject"
+                          disabled={app.status !== 'pending'}
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </>
                     </div>
                   </td>
                 </tr>
@@ -281,122 +349,56 @@ export default function Applications() {
             </tbody>
           </table>
         </div>
-        {filteredApplications.length === 0 && (
+        {filteredApplications.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500">No applications found</p>
           </div>
         )}
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center gap-2 py-4">
+          <button
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 disabled:opacity-50"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
+          <button
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 disabled:opacity-50"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* View Modal */}
-      {showViewModal && selectedApp && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Application Details</h3>
-                <p className="text-sm text-gray-500">{selectedApp.id}</p>
-              </div>
-              <button onClick={() => setShowViewModal(false)} className="p-1 hover:bg-gray-100 rounded">
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-            <div className="p-4 space-y-6">
-              {/* Company Info */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Company Information</h4>
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
-                  <div>
-                    <p className="text-xs text-gray-500">Company Name</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.companyName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">TPIN</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.tpin}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Email</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Category</p>
-                    <p className="text-sm font-medium text-gray-900">{selectedApp.category}</p>
-                  </div>
-                </div>
-              </div>
 
-              {/* Application Status */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
-                <div>
-                  <p className="text-xs text-gray-500">Status</p>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[selectedApp.status]}`}>
-                    {statusLabels[selectedApp.status]}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Application Fee</p>
-                  <p className="text-lg font-bold text-gray-900">{selectedApp.fee}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Submitted</p>
-                  <p className="text-sm font-medium text-gray-900">{selectedApp.submittedDate}</p>
-                </div>
-              </div>
+      <RemarksModal
+        open={remarksModal.open}
+        onClose={closeRemarksModal}
+        onSubmit={handleRemarksSubmit}
+        action={remarksModal.action}
+        loading={remarksLoading}
+      />
 
-              {/* Documents */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Submitted Documents</h4>
-                <div className="space-y-2">
-                  {selectedApp.documents.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <DocumentTextIcon className="w-5 h-5 text-gray-400" />
-                        <span className="text-sm text-gray-900">{doc.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {doc.uploaded ? (
-                          <>
-                            <span className="text-xs text-green-600">Uploaded</span>
-                            <button className="text-xs text-red-600 hover:text-red-700">View</button>
-                          </>
-                        ) : (
-                          <span className="text-xs text-red-600">Missing</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+      <ApplicationDetailsModal
+        open={showViewModal}
+        application={selectedApp}
+        supplier={
+          selectedApp?.supplierId
+            ? supplierMap[selectedApp.supplierId]
+            : undefined
+        }
+        onClose={() => setShowViewModal(false)}
+        onApprove={id => openRemarksModal('approve', id)}
+        onReject={id => openRemarksModal('reject', id)}
+        statusColors={statusColors}
+        statusLabels={statusLabels}
+      />
 
-            {/* Actions */}
-            <div className="flex justify-between gap-3 p-4 border-t border-gray-200">
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Close
-              </button>
-              {selectedApp.status === 'pending' && (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleReject(selectedApp.id)}
-                    className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => handleApprove(selectedApp.id)}
-                    className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Approve Application
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

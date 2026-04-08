@@ -1,105 +1,166 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
+import type { ApplicationResponse, ApplicationDocument } from '../apiservice/Apiservice';
+
+import {
+  getApplication,
+  withdrawApplication,
+  updateApplication,
+  fetchMyApplications,
+  fetchApplicationDocuments,
+  deleteApplication,
+} from '../apiservice/Apiservice';
+
+
 import {
   FunnelIcon,
   DocumentTextIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
   CurrencyDollarIcon,
-  XMarkIcon,
-  ArrowRightIcon,
   LightBulbIcon,
   ClipboardDocumentListIcon,
-  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
+
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
+import ApplicationDetails from '../component/ApplicationDetails';
 
-const applications = [
-  {
-    id: 'APP-2026-0001',
-    category: 'Construction Materials',
-    status: 'pending' as const,
-    submittedDate: '2026-03-05',
-    lastUpdated: '2026-03-08',
-    fee: 'K2,500',
-  },
-  {
-    id: 'APP-2026-0002',
-    category: 'Office Supplies',
-    status: 'approved' as const,
-    submittedDate: '2026-02-20',
-    lastUpdated: '2026-02-28',
-    fee: 'K1,500',
-  },
-  {
-    id: 'APP-2025-0089',
-    category: 'IT Equipment & Services',
-    status: 'rejected' as const,
-    submittedDate: '2025-12-15',
-    lastUpdated: '2025-12-30',
-    fee: 'K3,000',
-  },
-  {
-    id: 'APP-2026-0003',
-    category: 'Cleaning Services',
-    status: 'payment_pending' as const,
-    submittedDate: '2026-03-08',
-    lastUpdated: '2026-03-08',
-    fee: 'K1,000',
-  },
-  {
-    id: 'APP-2026-0004',
-    category: 'Security Services',
-    status: 'draft' as const,
-    lastUpdated: '2026-03-09',
-    fee: 'K2,000',
-  },
-];
+export default function Applications() {
+  const [updatingCategory, setUpdatingCategory] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  // Withdrawal modal state
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState('Submitted in error');
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 
-const statusOptions = [
+  // Fetch applications for current user
+  const [applications, setApplications] = useState<ApplicationResponse[]>([]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await fetchMyApplications();
+        setApplications(data);
+      } catch (e: any) {
+        // Optionally handle error (e.g., show notification)
+        setApplications([]);
+      }
+    }
+    fetchData();
+  }, []);
+  const statusOptions = [
   { value: '', label: 'All Statuses' },
   { value: 'draft', label: 'Draft' },
   { value: 'payment_pending', label: 'Payment Pending' },
-  { value: 'pending', label: 'Under Review' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
 ];
 
-const statusColors = {
+  const statusColors = {
   draft: { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500' },
-  pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', dot: 'bg-yellow-500' },
-  approved: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
-  rejected: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
   payment_pending: { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' },
 };
 
 const statusIcons = {
   draft: DocumentTextIcon,
-  pending: ClockIcon,
-  approved: CheckCircleIcon,
-  rejected: XCircleIcon,
   payment_pending: CurrencyDollarIcon,
 };
 
-export default function Applications() {
+
   const [statusFilter, setStatusFilter] = useState('');
-  const [selectedApp, setSelectedApp] = useState<typeof applications[0] | null>(null);
+  const [selectedApp, setSelectedApp] = useState<ApplicationResponse | null>(null);
+  const [documents, setDocuments] = useState<ApplicationDocument[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [docsError, setDocsError] = useState<string | null>(null);
 
   const filteredApplications = statusFilter
     ? applications.filter((app) => app.status === statusFilter)
     : applications;
 
-  const handleViewApplication = (id: string) => {
-    const app = applications.find((a) => a.id === id);
-    setSelectedApp(app || null);
+  const handleViewApplication = async (id: string) => {
+    setSelectedApp(null);
+    setDocuments([]);
+    setDocsError(null);
+    setLoadingDocs(true);
+    try {
+      const app = await getApplication(id);
+      setSelectedApp(app);
+      // Fetch the full list of documents for this application
+      const docs = await fetchApplicationDocuments(id);
+      setDocuments(docs);
+    } catch (e: any) {
+      setDocsError(e.message || 'Failed to load application details');
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
+  // Open modal to enter withdrawal reason
+  const handleWithdraw = () => {
+    setWithdrawReason('Submitted in error');
+    setShowWithdrawModal(true);
+  };
+
+  // Confirm withdrawal after entering reason
+  const confirmWithdraw = async () => {
+    if (!selectedApp) return;
+    if (!withdrawReason.trim()) {
+      alert('Please provide a reason for withdrawal.');
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      const updated = await withdrawApplication(selectedApp.id, { reason: withdrawReason });
+      setSelectedApp(updated);
+      setWithdrawSuccess(true);
+      setTimeout(() => {
+        setShowWithdrawModal(false);
+        setWithdrawSuccess(false);
+      }, 1800);
+    } catch (e: any) {
+      alert(e.message || 'Failed to withdraw application');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+    // Delete handler
+  const handleDelete = async () => {
+    if (!selectedApp) return;
+    if (!window.confirm('Are you sure you want to permanently delete this application?')) return;
+    try {
+      await deleteApplication(selectedApp.id);
+      alert('Application deleted successfully.');
+      setSelectedApp(null);
+      // Refresh applications list
+      const data = await fetchMyApplications();
+      setApplications(data);
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete application');
+    }
+  };
+
+  // Update category handler
+  const handleUpdateCategory = async () => {
+    if (!selectedApp) return;
+    const newCategoryId = window.prompt('Enter new Category ID:', selectedApp.category?.id || '');
+    if (!newCategoryId || newCategoryId === selectedApp.category?.id) return;
+
+    // Prompt for document IDs (comma-separated)
+    const docIdsInput = window.prompt('Enter document IDs (comma separated):', (documents || []).map(doc => doc.id).join(','));
+    if (docIdsInput === null) return; // Cancelled
+    const docIds = docIdsInput.split(',').map(id => id.trim()).filter(Boolean);
+
+    setUpdatingCategory(true);
+    try {
+      const updated = await updateApplication(selectedApp.id, newCategoryId, docIds);
+      setSelectedApp(updated);
+      alert('Application updated successfully.');
+    } catch (e: any) {
+      alert(e.message || 'Failed to update application');
+    } finally {
+      setUpdatingCategory(false);
+    }
   };
 
   // Stats
   const stats = {
     total: applications.length,
-    pending: applications.filter((a) => a.status === 'pending').length,
-    approved: applications.filter((a) => a.status === 'approved').length,
-    rejected: applications.filter((a) => a.status === 'rejected').length,
+    draft: applications.filter((a) => a.status === 'draft').length,
+    payment_pending: applications.filter((a) => a.status === 'payment_pending' || a.status === 'submitted').length,
   };
 
   return (
@@ -111,7 +172,7 @@ export default function Applications() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
@@ -125,34 +186,12 @@ export default function Applications() {
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-50 rounded-lg">
-              <ClockIcon className="w-5 h-5 text-yellow-600" />
+            <div className="p-2 bg-orange-50 rounded-lg">
+              <CurrencyDollarIcon className="w-5 h-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-2xl font-semibold text-yellow-600">{stats.pending}</p>
-              <p className="text-xs text-gray-500">Under Review</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-green-600">{stats.approved}</p>
-              <p className="text-xs text-gray-500">Approved</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-50 rounded-lg">
-              <XCircleIcon className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-red-600">{stats.rejected}</p>
-              <p className="text-xs text-gray-500">Rejected</p>
+              <p className="text-2xl font-semibold text-orange-600">{stats.payment_pending}</p>
+              <p className="text-xs text-gray-500">Payment Pending / Submitted</p>
             </div>
           </div>
         </div>
@@ -188,39 +227,34 @@ export default function Applications() {
           {filteredApplications.length > 0 ? (
             <div className="space-y-4">
               {filteredApplications.map((app) => {
-                const StatusIcon = statusIcons[app.status];
+                // Use category.name and category.applicationFee from backend
+                const StatusIcon = statusIcons[app.status as keyof typeof statusIcons] || DocumentTextIcon;
                 return (
                   <div key={app.id} className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-base font-semibold text-gray-900">{app.category}</h3>
+                        <h3 className="text-base font-semibold text-gray-900">{app.category?.name || '—'}</h3>
                         <p className="text-sm text-gray-500">{app.id}</p>
                       </div>
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusColors[app.status].bg} ${statusColors[app.status].text}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusColors[app.status as keyof typeof statusColors]?.bg || 'bg-gray-100'} ${statusColors[app.status as keyof typeof statusColors]?.text || 'text-gray-700'}`}>
                         <StatusIcon className="w-3.5 h-3.5" />
-                        {app.status === 'draft' && 'Draft'}
-                        {app.status === 'pending' && 'Under Review'}
-                        {app.status === 'approved' && 'Approved'}
-                        {app.status === 'rejected' && 'Rejected'}
-                        {app.status === 'payment_pending' && 'Payment Pending'}
+                        {app.status.charAt(0).toUpperCase() + app.status.slice(1).replace('_', ' ')}
                       </span>
                     </div>
-                    
                     <div className="grid grid-cols-3 gap-4 text-sm mb-5 py-4 border-t border-b border-gray-100">
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Application Fee</p>
-                        <p className="font-medium text-gray-900">{app.fee}</p>
+                        <p className="font-medium text-gray-900">K{app.category?.applicationFee ?? '—'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Submitted</p>
-                        <p className="font-medium text-gray-900">{app.submittedDate || '—'}</p>
+                        <p className="font-medium text-gray-900">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : '—'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Last Updated</p>
-                        <p className="font-medium text-gray-900">{app.lastUpdated}</p>
+                        <p className="font-medium text-gray-900">{app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}</p>
                       </div>
                     </div>
-                    
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleViewApplication(app.id)}
@@ -229,21 +263,21 @@ export default function Applications() {
                         View Details
                       </button>
                       {app.status === 'draft' && (
-                        <button className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                          Continue
-                          <ArrowRightIcon className="w-4 h-4" />
+                        <button
+                          onClick={() => {
+                            window.location.href = `/dashboard/documents?applicationId=${app.id}&category=${app.category?.id || ''}`;
+                          }}
+                          className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Edit
                         </button>
                       )}
-                      {app.status === 'payment_pending' && (
-                        <button className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                          Complete Payment
-                          <ArrowRightIcon className="w-4 h-4" />
-                        </button>
-                      )}
-                      {app.status === 'rejected' && (
-                        <button className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
-                          Reapply
-                          <ArrowRightIcon className="w-4 h-4" />
+                      {app.status === 'submitted' && (
+                        <button
+                          onClick={() => alert('Payment flow coming soon!')}
+                          className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Make Payment
                         </button>
                       )}
                     </div>
@@ -262,126 +296,114 @@ export default function Applications() {
           )}
         </div>
 
-        {/* Detail Panel / Timeline */}
+        {/* Catalog Display: Application Details as Modal Popup */}
         <div className="space-y-6">
-          {selectedApp ? (
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-semibold text-gray-900">Application Details</h3>
-                <button
-                  onClick={() => setSelectedApp(null)}
-                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                >
-                  <XMarkIcon className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="space-y-4 text-sm">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Reference</p>
-                  <p className="font-medium text-gray-900">{selectedApp.id}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Category</p>
-                  <p className="font-medium text-gray-900">{selectedApp.category}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Fee Paid</p>
-                  <p className="font-medium text-gray-900">{selectedApp.fee}</p>
-                </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="mt-6 pt-5 border-t border-gray-100">
-                <h4 className="text-sm font-medium text-gray-900 mb-4">Activity Timeline</h4>
-                <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="w-2 h-2 mt-1.5 rounded-full bg-red-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Application Submitted</p>
-                      <p className="text-xs text-gray-500">{selectedApp.submittedDate}</p>
+          {selectedApp && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 backdrop-blur-sm">
+              <div className="relative w-full max-w-lg mx-auto">
+                {loadingDocs ? (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 text-blue-600">Loading documents...</div>
+                ) : docsError ? (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 text-red-600">{docsError}</div>
+                ) : (
+                  <ApplicationDetails
+                    application={selectedApp}
+                    documents={documents}
+                    onClose={() => setSelectedApp(null)}
+                    onWithdraw={handleWithdraw}
+                    withdrawing={withdrawing}
+                    onDelete={['withdrawn', 'draft'].includes(selectedApp.status) ? handleDelete : undefined}
+                  />
+                )}
+                {/* Withdraw Modal */}
+                {showWithdrawModal && (
+                  <div className="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                      {withdrawSuccess ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <CheckCircleSolid className="w-12 h-12 text-green-500 mb-3" />
+                          <p className="text-lg font-semibold text-green-700 mb-2">Application withdrawn successfully!</p>
+                        </div>
+                      ) : (
+                        <>
+                          <h2 className="text-lg font-semibold mb-4 text-gray-900">Withdraw Application</h2>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Reason for withdrawal</label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+                            value={withdrawReason}
+                            onChange={e => setWithdrawReason(e.target.value)}
+                            placeholder="Enter reason..."
+                            disabled={withdrawing}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                              onClick={() => setShowWithdrawModal(false)}
+                              disabled={withdrawing}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                              onClick={confirmWithdraw}
+                              disabled={withdrawing}
+                            >
+                              {withdrawing ? 'Withdrawing...' : 'Confirm Withdraw'}
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
-                  {selectedApp.status === 'pending' && (
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 mt-1.5 rounded-full bg-yellow-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Under Review</p>
-                        <p className="text-xs text-gray-500">Being processed by admin</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedApp.status === 'approved' && (
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 mt-1.5 rounded-full bg-green-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Application Approved</p>
-                        <p className="text-xs text-gray-500">{selectedApp.lastUpdated}</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedApp.status === 'rejected' && (
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 mt-1.5 rounded-full bg-red-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Application Rejected</p>
-                        <p className="text-xs text-gray-500">{selectedApp.lastUpdated}</p>
-                        <p className="text-xs text-red-600 mt-1">Reason: Incomplete documentation</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start gap-3">
-                <LightBulbIcon className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick Tips</h3>
-                  <ul className="text-sm text-gray-600 space-y-2">
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Click on an application to see details
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Use filters to find specific applications
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Continue draft applications anytime
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
-                      Check your email for status updates
-                    </li>
-                  </ul>
-                </div>
+                )}
               </div>
             </div>
           )}
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Legend</h3>
-            <ul className="text-sm space-y-3">
-              {Object.entries(statusColors).map(([status, colors]) => {
-                const Icon = statusIcons[status as keyof typeof statusIcons];
-                return (
-                  <li key={status} className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${colors.text}`} />
-                    <span className="text-gray-600">
-                      {status === 'draft' && 'Draft - Not yet submitted'}
-                      {status === 'pending' && 'Pending - Under review'}
-                      {status === 'approved' && 'Approved - Ready to supply'}
-                      {status === 'rejected' && 'Rejected - See reason'}
-                      {status === 'payment_pending' && 'Payment Pending'}
-                    </span>
+          {!selectedApp && (
+            <>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <LightBulbIcon className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick Tips</h3>
+                    <ul className="text-sm text-gray-600 space-y-2">
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Click on an application to see details
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Use filters to find specific applications
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Continue draft applications anytime
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircleSolid className="w-3.5 h-3.5 text-gray-400" />
+                        Check your email for status updates
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Legend</h3>
+                <ul className="text-sm space-y-3">
+                  <li className="flex items-center gap-3">
+                    <DocumentTextIcon className="w-4 h-4 text-gray-700" />
+                    <span className="text-gray-600">Draft - Not yet submitted</span>
                   </li>
-                );
-              })}
-            </ul>
-          </div>
+                  <li className="flex items-center gap-3">
+                    <CurrencyDollarIcon className="w-4 h-4 text-orange-700" />
+                    <span className="text-gray-600">Payment Pending</span>
+                  </li>
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

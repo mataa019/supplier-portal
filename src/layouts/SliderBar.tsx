@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   HomeIcon,
   FolderIcon,
@@ -14,8 +14,8 @@ const menuItems = [
   { path: '/dashboard/categories', label: 'Categories', icon: FolderIcon },
   { path: '/dashboard/apply', label: 'Apply', icon: PencilSquareIcon },
   { path: '/dashboard/documents', label: 'Documents', icon: DocumentTextIcon },
+  { path: '/dashboard/applications', label: 'Applications', icon: ClipboardDocumentListIcon },
   { path: '/dashboard/payment', label: 'Payment', icon: CreditCardIcon },
-  { path: '/dashboard/applications', label: 'My Applications', icon: ClipboardDocumentListIcon },
 ];
 
 interface SidebarProps {
@@ -24,9 +24,18 @@ interface SidebarProps {
 
 export default function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleClick = () => {
     if (onNavigate) onNavigate();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('pendingLoginEmail');
+    handleClick();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -59,14 +68,13 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
 
       {/* Logout */}
       <div className="px-4 py-4 border-t border-red-600">
-        <Link
-          to="/login"
-          onClick={handleClick}
-          className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-white/80 hover:text-white hover:bg-red-600 rounded-lg transition-colors"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-white/80 hover:text-white hover:bg-red-600 rounded-lg transition-colors text-left"
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
           Logout
-        </Link>
+        </button>
       </div>
     </aside>
   );

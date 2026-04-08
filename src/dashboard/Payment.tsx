@@ -11,6 +11,7 @@ import {
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
 import TextInput from '../component/TextInput';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 const categoryFees: Record<string, { name: string; fee: number }> = {
   'CAT-001': { name: 'Construction Materials', fee: 2500 },
@@ -60,6 +61,7 @@ export default function Payment() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {isProcessing && <LoadingOverlay message="Processing Payment..." />}
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Payment</h1>
@@ -69,29 +71,7 @@ export default function Payment() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Fee Summary */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Application Fee Summary</h2>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 pb-3 border-b border-gray-200 gap-1">
-                <span className="text-sm text-gray-600">Category</span>
-                <span className="font-medium text-gray-900">{categoryInfo.name}</span>
-              </div>
-              <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                <span className="text-sm text-gray-600">Application Fee</span>
-                <span className="font-medium text-gray-900">K{categoryInfo.fee.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                <span className="text-sm text-gray-600">Processing Fee</span>
-                <span className="font-medium text-gray-900">K50</span>
-              </div>
-              <div className="flex justify-between items-center text-base sm:text-lg">
-                <span className="font-semibold text-gray-900">Total Amount</span>
-                <span className="font-bold text-red-600">K{(categoryInfo.fee + 50).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
+         
           {/* Payment Method Selection */}
           <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
             <h2 className="text-base font-semibold text-gray-900 mb-4">Select Payment Method</h2>

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import LoadingOverlay from '../component/LoadingOverlay';
+import { useState, useEffect } from 'react';
+import { listAdminSuppliers, getAdminSupplier, deleteAdminSupplier } from '../apiservice/adminServices';
+import type { AdminSupplier } from '../apiservice/adminModels';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
-  PencilSquareIcon,
   TrashIcon,
   EyeIcon,
   XMarkIcon,
@@ -11,39 +13,39 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 
-interface Supplier {
-  id: string;
-  companyName: string;
-  tpin: string;
-  email: string;
-  phone: string;
-  categories: string[];
-  status: 'active' | 'suspended' | 'pending';
-  registeredDate: string;
-}
 
-const mockSuppliers: Supplier[] = [
-  { id: 'SUP-001', companyName: 'ABC Construction Ltd', tpin: '1234567890', email: 'info@abcconstruction.com', phone: '+260 97X XXX XXX', categories: ['Construction Materials'], status: 'active', registeredDate: '2026-01-15' },
-  { id: 'SUP-002', companyName: 'Tech Solutions Inc', tpin: '0987654321', email: 'contact@techsolutions.com', phone: '+260 96X XXX XXX', categories: ['IT Equipment & Services'], status: 'active', registeredDate: '2026-02-10' },
-  { id: 'SUP-003', companyName: 'CleanPro Services', tpin: '1122334455', email: 'hello@cleanpro.com', phone: '+260 95X XXX XXX', categories: ['Cleaning Services'], status: 'suspended', registeredDate: '2025-11-20' },
-  { id: 'SUP-004', companyName: 'SafeGuard Security', tpin: '5566778899', email: 'info@safeguard.com', phone: '+260 97X XXX XXX', categories: ['Security Services'], status: 'active', registeredDate: '2026-03-01' },
-  { id: 'SUP-005', companyName: 'Office Plus Zambia', tpin: '9988776655', email: 'sales@officeplus.co.zm', phone: '+260 96X XXX XXX', categories: ['Office Supplies'], status: 'pending', registeredDate: '2026-03-08' },
-  { id: 'SUP-006', companyName: 'Fresh Foods Catering', tpin: '4433221100', email: 'orders@freshfoods.com', phone: '+260 95X XXX XXX', categories: ['Catering Services'], status: 'active', registeredDate: '2025-12-05' },
-];
-
-const statusColors = {
+const statusColors: Record<string, string> = {
   active: 'bg-green-100 text-green-700',
   suspended: 'bg-red-100 text-red-700',
   pending: 'bg-yellow-100 text-yellow-700',
 };
 
 export default function Suppliers() {
-  const [suppliers, setSuppliers] = useState(mockSuppliers);
+  const [suppliers, setSuppliers] = useState<AdminSupplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<AdminSupplier | null>(null);
+  const [loading, setLoading] = useState(false);
+  // Fetch suppliers from API
+  useEffect(() => {
+    setLoading(true);
+    const minDuration = 2300;
+    const start = Date.now();
+    listAdminSuppliers()
+      .then(data => setSuppliers(data))
+      .catch(err => alert(err.message || 'Failed to fetch suppliers'))
+      .finally(() => {
+        const elapsed = Date.now() - start;
+        const remaining = minDuration - elapsed;
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining);
+        } else {
+          setLoading(false);
+        }
+      });
+  }, []);
 
   const filteredSuppliers = suppliers.filter((supplier) => {
     const matchesSearch = supplier.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,9 +55,14 @@ export default function Suppliers() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to remove this supplier?')) {
-      setSuppliers(suppliers.filter((s) => s.id !== id));
+      try {
+        await deleteAdminSupplier(id);
+        setSuppliers(suppliers.filter((s) => s.id !== id));
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete supplier');
+      }
     }
   };
 
@@ -68,13 +75,19 @@ export default function Suppliers() {
     }));
   };
 
-  const handleView = (supplier: Supplier) => {
-    setSelectedSupplier(supplier);
-    setShowViewModal(true);
+  const handleView = async (supplier: AdminSupplier) => {
+    try {
+      const fresh = await getAdminSupplier(supplier.id);
+      setSelectedSupplier(fresh);
+      setShowViewModal(true);
+    } catch (err: any) {
+      alert(err.message || 'Failed to fetch supplier details');
+    }
   };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {loading && <LoadingOverlay message="Loading..." />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -136,6 +149,9 @@ export default function Suppliers() {
       </div>
 
       {/* Table */}
+      {loading && (
+        <div className="text-center py-8 text-gray-500">Loading suppliers...</div>
+      )}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -143,7 +159,7 @@ export default function Suppliers() {
               <tr>
                 <th className="px-4 py-3 text-left">Company</th>
                 <th className="px-4 py-3 text-left hidden md:table-cell">TPIN</th>
-                <th className="px-4 py-3 text-left hidden lg:table-cell">Categories</th>
+                <th className="px-4 py-3 text-left hidden lg:table-cell">Address</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left hidden sm:table-cell">Registered</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -159,19 +175,21 @@ export default function Suppliers() {
                   <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{supplier.tpin}</td>
                   <td className="px-4 py-4 hidden lg:table-cell">
                     <div className="flex flex-wrap gap-1">
-                      {supplier.categories.map((cat) => (
-                        <span key={cat} className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                          {cat}
+                      {supplier.address ? (
+                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                          {supplier.address}
                         </span>
-                      ))}
+                      ) : (
+                        <span className="text-xs text-gray-400">No address</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[supplier.status]}`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[supplier.status] || 'bg-gray-100 text-gray-700'}`}>
                       {supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{supplier.registeredDate}</td>
+                  <td className="px-4 py-4 text-sm text-gray-500 hidden sm:table-cell">{(supplier.createdAt ? supplier.createdAt.split('T')[0] : '')}</td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
@@ -231,7 +249,7 @@ export default function Suppliers() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.email}</p>
+                  <p className="text-sm font-medium text-gray-900 break-all">{selectedSupplier.email}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Phone</p>
@@ -239,25 +257,19 @@ export default function Suppliers() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Status</p>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[selectedSupplier.status]}`}>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[selectedSupplier.status] || 'bg-gray-100 text-gray-700'}`}>
                     {selectedSupplier.status.charAt(0).toUpperCase() + selectedSupplier.status.slice(1)}
                   </span>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Registered Date</p>
-                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.registeredDate}</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.createdAt}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-2">Categories</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedSupplier.categories.map((cat) => (
-                    <span key={cat} className="px-3 py-1 text-sm bg-red-50 text-red-700 rounded-full">
-                      {cat}
-                    </span>
-                  ))}
+                <div>
+                  <p className="text-xs text-gray-500">Address</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedSupplier.address}</p>
                 </div>
-              </div>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t border-gray-200">
               <button
@@ -266,9 +278,7 @@ export default function Suppliers() {
               >
                 Close
               </button>
-              <button className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700">
-                Edit Supplier
-              </button>
+              
             </div>
           </div>
         </div>
@@ -303,8 +313,12 @@ export default function Suppliers() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input type="email" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" />
               </div>
+               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input type="text" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" />
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                 <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
                   <option value="">Select category</option>
                   <option value="construction">Construction Materials</option>

@@ -8,6 +8,7 @@ import {
   BellIcon,
 } from '@heroicons/react/24/outline';
 import Button from '../component/Button';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 const categoryInfo: Record<string, string> = {
   'CAT-001': 'Construction Materials',
@@ -113,6 +114,7 @@ export default function Submit() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {isSubmitting && <LoadingOverlay message="Finalizing Submission..." />}
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Review & Submit</h1>

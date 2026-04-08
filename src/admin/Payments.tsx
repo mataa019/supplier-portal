@@ -155,26 +155,6 @@ export default function Payments() {
         <p className="text-sm text-gray-500 mt-1">Verify payment proofs and manage transactions</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-          <p className="text-sm text-gray-500">Total Payments</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-          <p className="text-sm text-gray-500">Pending Verification</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-2xl font-bold text-green-600">{stats.verified}</p>
-          <p className="text-sm text-gray-500">Verified</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-2xl font-bold text-gray-900">K{stats.totalAmount.toLocaleString()}</p>
-          <p className="text-sm text-gray-500">Verified Amount</p>
-        </div>
-      </div>
-
       {/* Filters */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
         <div className="flex flex-col sm:flex-row gap-4">

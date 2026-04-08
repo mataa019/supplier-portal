@@ -14,6 +14,9 @@ import {
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import FileUpload from '../component/FileUpload';
 import Button from '../component/Button';
+import LoadingOverlay from '../component/LoadingOverlay';
+import { createApplication, uploadApplicationDocument, submitApplication, fetchSupplierCategories, fetchSupplierCategoryById, type SupplierCategory, type ApplicationResponse, updateApplication } from '../apiservice/Apiservice';
+import Select from '../component/Select';
 
 interface UploadedFile {
   name: string;
@@ -24,28 +27,49 @@ const documentTypes = [
   { id: 'application_form', label: 'Completed Application Form', required: true },
   { id: 'business_registration', label: 'Business Registration Certificate', required: true },
   { id: 'tax_certificate', label: 'Tax Compliance Certificate (TPIN)', required: true },
-  { id: 'financial_statements', label: 'Financial Statements (Last 2 years)', required: false },
   { id: 'company_profile', label: 'Company Profile', required: false },
-  { id: 'product_catalog', label: 'Product Catalog / Service Portfolio', required: false },
-  { id: 'certifications', label: 'Quality / Industry Certifications', required: false },
-  { id: 'references', label: 'Client References / Recommendation Letters', required: false },
+  { id: 'references', label: 'Current trade referencess', required: false },
 ];
 
 export default function Documents() {
+  const [categories, setCategories] = useState<SupplierCategory[]>([]);
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [categoryName, setCategoryName] = useState<string>('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile | null>>({});
+  const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'uploading' | 'success' | 'error'>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  const categoryId = searchParams.get('category');
+  useEffect(() => {
+    fetchSupplierCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
   useEffect(() => {
-    // Initialize uploaded files state
-    const initialState: Record<string, UploadedFile | null> = {};
+    const urlCategory = searchParams.get('category');
+    if (urlCategory) setCategoryId(urlCategory);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (categoryId) {
+      fetchSupplierCategoryById(categoryId)
+        .then((cat) => setCategoryName(cat.name))
+        .catch(() => setCategoryName('Unknown Category'));
+    } else {
+      setCategoryName('');
+    }
+  }, [categoryId]);
+
+  useEffect(() => {
+    // Initialize uploaded files state and upload status
+    const initialFiles: Record<string, UploadedFile | null> = {};
+    const initialStatus: Record<string, 'idle'> = {};
     documentTypes.forEach((doc) => {
-      initialState[doc.id] = null;
+      initialFiles[doc.id] = null;
+      initialStatus[doc.id] = 'idle';
     });
-    setUploadedFiles(initialState);
+    setUploadedFiles(initialFiles);
+    setUploadStatus(initialStatus);
   }, []);
 
   const handleFileSelect = (docId: string) => (file: File | null) => {
@@ -64,21 +88,114 @@ export default function Documents() {
 
   const handleSaveDraft = async () => {
     setIsSaving(true);
-    // Simulate save
+    // Simulate save (should call API in real app)
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
     alert('Draft saved successfully!');
   };
 
-  const handleProceed = () => {
-    if (requiredDocsUploaded) {
-      navigate(`/dashboard/payment?category=${categoryId || ''}`);
+  // Create application and upload documents, then enable submit
+  const [uploading, setUploading] = useState(false);
+  const applicationId = searchParams.get('applicationId');
+  const handleProceed = async () => {
+    if (!categoryId) {
+      alert('No category selected. Please select a category and try again.');
+      return;
+    }
+    setUploading(true);
+    try {
+      // Collect files and document meta
+      const files: File[] = [];
+      const documents: { type: string; description: string }[] = [];
+      documentTypes.forEach(doc => {
+        const uploaded = uploadedFiles[doc.id];
+        if (uploaded) {
+          files.push(uploaded.file);
+          documents.push({ type: doc.id, description: doc.label });
+          setUploadStatus((prev) => ({ ...prev, [doc.id]: 'uploading' }));
+        }
+      });
+
+      let appId = applicationId;
+      if (!appId) {
+        // Create new application if not exists
+        const app = await createApplication({ categoryId });
+        appId = app.id;
+        setCreatedAppId(app.id);
+      }
+
+      // Always upload files if present
+      if (files.length > 0 && appId) {
+        try {
+          await uploadApplicationDocument({ applicationId: appId, files, documents });
+          documentTypes.forEach(doc => {
+            if (uploadedFiles[doc.id]) {
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'success' }));
+            }
+          });
+          setTimeout(() => {
+            setUploading(false);
+            setShowSubmit(true);
+            setCreatedAppId(appId!);
+          }, 2500);
+        } catch (err) {
+          documentTypes.forEach(doc => {
+            if (uploadedFiles[doc.id]) {
+              setUploadStatus((prev) => ({ ...prev, [doc.id]: 'error' }));
+            }
+          });
+          setTimeout(() => setUploading(false), 2500);
+        }
+      } else {
+        alert('No documents to upload.');
+        setTimeout(() => setUploading(false), 2500);
+      }
+    } catch (err: any) {
+      setUploading(false);
+      alert(err.message || 'Failed to create/update application or upload documents');
+    }
+  };
+
+  // State for submit step
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [createdAppId, setCreatedAppId] = useState<string | null>(null);
+
+  // Handle submit
+  const handleSubmitApplication = async () => {
+    if (!createdAppId) return;
+    try {
+      await submitApplication(createdAppId, { declarationAccepted: true });
+      navigate('/dashboard/applications');
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit application');
     }
   };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {/* Category Selector */}
+      <div className="mb-4 max-w-xs">
+        <Select
+          id="category"
+          label="Select Category"
+          value={categoryId}
+          onChange={e => setCategoryId(e.target.value)}
+          options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
+          required
+        />
+      </div>
+      {/* Category Info - Compact Badge */}
+      {categoryName && (
+        <div className="mb-4">
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold border border-red-200">
+            <DocumentCheckIcon className="w-4 h-4" />
+            {categoryName}
+          </span>
+        </div>
+      )}
       {/* Header */}
+      {isSaving && <LoadingOverlay message="Saving Draft..." />}
+      {uploading && <LoadingOverlay message={applicationId ? "Updating application..." : "Uploading documents..."} />}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl font-semibold text-gray-900">Upload Documents</h1>
         <p className="text-sm text-gray-500 mt-1">Upload all required documents to proceed with your application</p>
@@ -113,16 +230,26 @@ export default function Documents() {
               {documentTypes
                 .filter((doc) => doc.required)
                 .map((doc) => (
-                  <FileUpload
-                    key={doc.id}
-                    id={doc.id}
-                    label={doc.label}
-                    required
-                    onFileSelect={handleFileSelect(doc.id)}
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    maxSize={10}
-                    hint="PDF, DOC, or image files up to 10MB"
-                  />
+                  <div key={doc.id} className="space-y-1">
+                    <FileUpload
+                      id={doc.id}
+                      label={doc.label}
+                      required
+                      onFileSelect={handleFileSelect(doc.id)}
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      hint="PDF, DOC, or image files up to 10MB"
+                    />
+                    {uploadStatus[doc.id] === 'uploading' && (
+                      <span className="text-xs text-blue-600">Uploading...</span>
+                    )}
+                    {uploadStatus[doc.id] === 'success' && (
+                      <span className="text-xs text-green-600">Uploaded successfully</span>
+                    )}
+                    {uploadStatus[doc.id] === 'error' && (
+                      <span className="text-xs text-red-600">Upload failed. Please retry.</span>
+                    )}
+                  </div>
                 ))}
             </div>
           </div>
@@ -137,15 +264,25 @@ export default function Documents() {
               {documentTypes
                 .filter((doc) => !doc.required)
                 .map((doc) => (
-                  <FileUpload
-                    key={doc.id}
-                    id={doc.id}
-                    label={doc.label}
-                    onFileSelect={handleFileSelect(doc.id)}
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    maxSize={10}
-                    hint="PDF, DOC, or image files up to 10MB"
-                  />
+                  <div key={doc.id} className="space-y-1">
+                    <FileUpload
+                      id={doc.id}
+                      label={doc.label}
+                      onFileSelect={handleFileSelect(doc.id)}
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      hint="PDF, DOC, or image files up to 10MB"
+                    />
+                    {uploadStatus[doc.id] === 'uploading' && (
+                      <span className="text-xs text-blue-600">Uploading...</span>
+                    )}
+                    {uploadStatus[doc.id] === 'success' && (
+                      <span className="text-xs text-green-600">Uploaded successfully</span>
+                    )}
+                    {uploadStatus[doc.id] === 'error' && (
+                      <span className="text-xs text-red-600">Upload failed. Please retry.</span>
+                    )}
+                  </div>
                 ))}
             </div>
           </div>
@@ -155,14 +292,25 @@ export default function Documents() {
             <Button variant="outline" onClick={handleSaveDraft} disabled={isSaving}>
               {isSaving ? 'Saving...' : 'Save Draft'}
             </Button>
-            <button
-              onClick={handleProceed}
-              disabled={!requiredDocsUploaded}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Proceed to Payment
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
+            {!showSubmit ? (
+              <button
+                onClick={handleProceed}
+                disabled={!requiredDocsUploaded}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Upload & Continue
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitApplication}
+                disabled={uploading}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {uploading ? 'Uploading...' : 'Submit Application'}
+                <CheckCircleSolid className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -217,19 +365,10 @@ export default function Documents() {
             </ul>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <div className="flex items-start gap-3">
-              <LightBulbIcon className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Tip</h3>
-                <p className="text-sm text-gray-600">
-                  You can save your progress and return later. Your uploaded documents will be saved as a draft.
-                </p>
-              </div>
-            </div>
-          </div>
+    
         </div>
       </div>
     </div>
   );
 }
+

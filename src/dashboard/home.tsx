@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import {
   DocumentTextIcon,
@@ -7,22 +8,53 @@ import {
   CreditCardIcon,
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import { fetchMyApplications, fetchSupplierCategories } from '../apiservice/Apiservice';
 
-const stats = [
-  { title: 'Total Applications', value: 3, icon: DocumentTextIcon },
-  { title: 'Pending Review', value: 1, icon: ClockIcon },
-  { title: 'Approved', value: 1, icon: CheckCircleIcon },
-  { title: 'Categories Applied', value: 2, icon: FolderIcon },
-];
-
-const steps = [
-  { number: 1, title: 'Select Category', description: 'Choose a supply category to apply for', link: '/dashboard/categories' },
-  { number: 2, title: 'Download Form', description: 'Get the application form for your category', link: '/dashboard/apply' },
-  { number: 3, title: 'Upload Documents', description: 'Submit required documents', link: '/dashboard/documents' },
-  { number: 4, title: 'Make Payment', description: 'Pay application fee and upload proof', link: '/dashboard/payment' },
-];
 
 export default function DashboardHome() {
+  const [stats, setStats] = useState([
+    { title: 'Total Applications', value: 0, icon: DocumentTextIcon },
+    { title: 'Payment Pending', value: 0, icon: ClockIcon },
+    { title: 'Draft Applications', value: 0, icon: CheckCircleIcon },
+    { title: 'Categories Applied', value: 0, icon: FolderIcon },
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [applications] = await Promise.all([
+          fetchMyApplications(),
+          fetchSupplierCategories(),
+        ]);
+
+        // Calculate stats
+        const totalApplications = applications.length;
+        const paymentPending = applications.filter(app => app.status === 'submitted').length;
+        const draftApplications = applications.filter(app => app.status === 'draft').length;
+        // Unique categories applied for
+        const uniqueCategoryIds = new Set(applications.map(app => app.categoryId));
+        const categoriesApplied = uniqueCategoryIds.size;
+
+        setStats([
+          { title: 'Total Applications', value: totalApplications, icon: DocumentTextIcon },
+          { title: 'Payment Pending', value: paymentPending, icon: ClockIcon },
+          { title: 'Draft Applications', value: draftApplications, icon: CheckCircleIcon },
+          { title: 'Categories Applied', value: categoriesApplied, icon: FolderIcon },
+        ]);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load dashboard stats');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
@@ -33,36 +65,75 @@ export default function DashboardHome() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
-        {stats.map((stat) => (
-          <div key={stat.title} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+        {loading ? (
+          <div className="col-span-4 text-center py-8">Loading stats...</div>
+        ) : error ? (
+          <div className="col-span-4 text-center text-red-600 py-8">{error}</div>
+        ) : (
+          stats.map((stat) => (
+            <div key={stat.title} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">{stat.title}</p>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</p>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">{stat.title}</p>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Application Process */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
         <h2 className="text-base font-semibold text-gray-900 mb-4 sm:mb-5">Application Process</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {steps.map((step) => (
-            <Link
-              key={step.number}
-              to={step.link}
-              className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors"
-            >
-              <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-gray-900 text-white rounded text-sm font-semibold flex items-center justify-center">
-                {step.number}
-              </span>
-              <div className="min-w-0">
-                <h3 className="text-sm font-medium text-gray-900">{step.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">{step.description}</p>
-              </div>
-            </Link>
-          ))}
+          <Link
+            to="/dashboard/categories"
+            className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors"
+          >
+            <span className="shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-gray-900 text-white rounded text-sm font-semibold flex items-center justify-center">
+              1
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium text-gray-900">Select Category</h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Choose a supply category to apply for</p>
+            </div>
+          </Link>
+          <Link
+            to="/dashboard/apply"
+            className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors"
+          >
+            <span className="shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-gray-900 text-white rounded text-sm font-semibold flex items-center justify-center">
+              2
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium text-gray-900">Download Form</h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Get the application form for your category</p>
+            </div>
+          </Link>
+          <Link
+            to="/dashboard/documents"
+            className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors"
+          >
+            <span className="shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-gray-900 text-white rounded text-sm font-semibold flex items-center justify-center">
+              3
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium text-gray-900">Upload Documents</h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Submit required documents</p>
+            </div>
+          </Link>
+          <Link
+            to="/dashboard/payment"
+            className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors"
+          >
+            <span className="shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-gray-900 text-white rounded text-sm font-semibold flex items-center justify-center">
+              4
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium text-gray-900">Make Payment</h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Pay application fee and upload proof</p>
+            </div>
+          </Link>
         </div>
       </div>
 
